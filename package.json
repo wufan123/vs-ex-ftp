@@ -36,6 +36,22 @@
       {
         "command": "extension.copyCodeAsImage",
         "title": "Copy Code as Image"
+      },
+      {
+        "command": "ftpExplorer.refresh",
+        "title": "Refresh FTP Directory",
+        "category": "FTP Explorer",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "ftpExplorer.downloadToDirectory",
+        "title": "Download",
+        "category": "FTP Explorer"
+      },
+      {
+        "command": "ftpExplorer.setRootDirectory",
+        "title": "Set Current Path as Root Directory",
+        "category": "FTP Explorer"
       }
     ],
     "menus": {
@@ -43,6 +59,25 @@
         {
           "when": "editorTextFocus",
           "command": "extension.copyCodeAsImage",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "ftpExplorer.downloadToDirectory",
+          "when": "view == ftp-explorer && viewItem == folder || viewItem == file",
+          "group": "navigation"
+        },
+        {
+          "command": "ftpExplorer.setRootDirectory",
+          "when": "view == ftp-explorer && !folder",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "ftpExplorer.refresh",
+          "when": "view == ftp-explorer && ftpExplorer.refreshEnabled",
           "group": "navigation"
         }
       ]

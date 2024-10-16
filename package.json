@@ -1,0 +1,81 @@
+{
+  "name": "vs-ex-udcweb",
+  "displayName": "UDCweb",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:extension.copyCodeAsImage"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "udc-web",
+          "title": "UDC WEB",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "udc-web": [
+        {
+          "id": "ftp-explorer",
+          "name": "ftp-explorer",
+          "contextualTitle": "UDC WEB"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "extension.copyCodeAsImage",
+        "title": "Copy Code as Image"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorTextFocus",
+          "command": "extension.copyCodeAsImage",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.8",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.94.0",
+    "@typescript-eslint/eslint-plugin": "^8.7.0",
+    "@typescript-eslint/parser": "^8.7.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.11.1",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.6.2",
+    "webpack": "^5.95.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "basic-ftp": "^5.0.5",
+    "clipboardy": "^4.0.0",
+    "puppeteer": "^23.5.3"
+  }
+}

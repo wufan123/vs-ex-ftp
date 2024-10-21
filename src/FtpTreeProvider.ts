@@ -104,6 +104,19 @@ class FTPClientWrapper {
         this.client.trackProgress(); // 停止进度追踪
     }
 
+     // 删除文件
+     public async removeFile(remotePath: string): Promise<void> {
+        await this.connect();
+        await this.client.remove(remotePath);
+    }
+
+    // 删除目录
+    public async removeDirectory(remotePath: string): Promise<void> {
+        await this.connect();
+        await this.client.removeDir(remotePath);
+    }
+
+
     close(): void {
         if (!this.client.closed) {
             this.client.close();
@@ -127,6 +140,9 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
         // this.currentPath = config.get<string>('path', '/');
         // 启用刷新按钮
         vscode.commands.executeCommand('setContext', 'ftpExplorer.refreshEnabled', true);
+    }
+    public getCurrentRootPath(){
+        return this.currentRootPath;
     }
 
     public async downloadToDirectory(item: FtpItem) {
@@ -207,10 +223,10 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
                 items.push(new FtpItem(
                     "[To Parent Directory]",
                     "../",
-                    this.getParentPath(path),
+                    this.getPathParentPath(path),
                     false
                 ));
-                console.log("getParentPath", this.getParentPath(path));
+                console.log("getParentPath", this.getPathParentPath(path));
             }
             items.push(...files.map(file => new FtpItem(
                 file.name,
@@ -226,7 +242,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
         }
     }
 
-    private getParentPath(path: string): string {
+    private getPathParentPath(path: string): string {
         // 如果路径是根路径，返回根路径本身
         if (path === '/' || path === '') {
             return '/';
@@ -250,6 +266,34 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
 
         // 如果父路径为空，返回根路径
         return parentPath === '' ? '/' : parentPath;
+    }
+
+     // 新增删除文件的方法
+     public async deleteFTPItem(item: FtpItem): Promise<void> {
+        if (this.isBusy) {
+            vscode.window.showErrorMessage('Please wait for the current task to complete.');
+            return;
+        }
+
+        const confirmDelete = await vscode.window.showWarningMessage(`Are you sure you want to delete ${item.label}?`, 'Yes', 'No');
+        if (confirmDelete !== 'Yes') return;
+        this.isBusy = true;
+        try {
+            // 调用FTP删除操作，文件或文件夹
+            if (item.isDirectory) {
+                await this.ftpClient.removeDirectory(item.path);
+            } else {
+                await this.ftpClient.removeFile(item.path);
+            }
+            // 删除成功提示
+            vscode.window.showInformationMessage(`Successfully deleted ${item.label}`);
+            // 删除成功后刷新当前目录
+            await this.refreshFTPItems(this.currentPath);
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to delete ${item.label}: ${error.message}`);
+        } finally {
+            this.isBusy = false;
+        }
     }
 
     /**

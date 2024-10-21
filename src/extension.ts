@@ -18,7 +18,7 @@ function activate(context: vscode.ExtensionContext) {
     ftpTreeProvider.refresh();
     // 注册刷新命令
     const refreshCommand = vscode.commands.registerCommand('ftpExplorer.refresh', async () => {
-        await ftpTreeProvider.refreshFTPItems();
+        await ftpTreeProvider.refreshFTPItems(ftpTreeProvider.getCurrentRootPath());
     });
     context.subscriptions.push(refreshCommand);
 
@@ -28,6 +28,12 @@ function activate(context: vscode.ExtensionContext) {
             ftpTreeProvider.downloadToDirectory(item);
         })
     );
+    //注册删除文件命令
+    context.subscriptions.push(vscode.commands.registerCommand('ftpExplorer.deleteItem', async (item: FtpItem) => {
+        const treeProvider = new FtpTreeProvider();
+        await treeProvider.deleteFTPItem(item);
+    }));
+    // 注册回到上一级命令
     context.subscriptions.push(
         vscode.commands.registerCommand('ftpExplorer.backParentDirectory', (item: FtpItem) => {
             ftpTreeProvider.backParentDirectory(item);

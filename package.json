@@ -76,7 +76,7 @@
       },
       {
         "command": "ftpExplorer.downloadToDirectory",
-        "title": "Download",
+        "title": "Download FTP Item",
         "category": "FTP Explorer"
       },
       {
@@ -87,6 +87,11 @@
       {
         "command": "ftpExplorer.backParentDirectory",
         "title": "Back Parent Directory",
+        "category": "FTP Explorer"
+      },
+      {
+        "command": "ftpExplorer.deleteItem",
+        "title": "Delete FTP Item",
         "category": "FTP Explorer"
       }
     ],
@@ -100,8 +105,13 @@
       ],
       "view/item/context": [
         {
+          "command": "ftpExplorer.deleteItem",
+          "when": "view == ftp-explorer && (viewItem == folder || viewItem == file)",
+          "group": "navigation"
+        },
+        {
           "command": "ftpExplorer.downloadToDirectory",
-          "when": "view == ftp-explorer && viewItem == folder || viewItem == file",
+          "when": "view == ftp-explorer && (viewItem == folder || viewItem == file)",
           "group": "navigation"
         },
         {

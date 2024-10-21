@@ -18,14 +18,14 @@ class FTPClientWrapper {
         // 防止并发连接
         if (this.isConnecting || !this.client.closed) return;
         this.isConnecting = true;
+        const config = vscode.workspace.getConfiguration('ftpClient');
+        const host = config.get<string>('host', '192.168.63.174');
+        const user = config.get<string>('user', 'udc');
+        const password = config.get<string>('password', 'jishubu@4399.com');
+        const secure = config.get<boolean>('secure', false);
 
         try {
-            await this.client.access({
-                host: "192.168.63.174",
-                user: "udc",
-                password: "jishubu@4399.com",
-                secure: false
-            });
+            await this.client.access({ host, user, password, secure });
         } catch (error) {
             vscode.window.showErrorMessage(`FTP Connection Error: ${error.message}`);
             throw error;
@@ -123,6 +123,8 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
 
     constructor() {
         this.ftpClient = new FTPClientWrapper();
+        const config = vscode.workspace.getConfiguration('ftpClient');
+        // this.currentPath = config.get<string>('path', '/');
         // 启用刷新按钮
         vscode.commands.executeCommand('setContext', 'ftpExplorer.refreshEnabled', true);
     }
@@ -160,7 +162,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     // 设置当前路径为一级目录
     public async setRootDirectory(item: FtpItem) {
         this.currentRootPath = item.path; // 更新当前根路径
-        await this.refreshFTPItems(this.currentRootPath); // 刷新FTP项目
+        await this.refreshFTPItems(this.currentRootPath); // 刷新FTP项目 
     }
 
     /**
@@ -171,9 +173,9 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
         vscode.commands.executeCommand('setContext', 'ftpExplorer.refreshEnabled', false);
         await this.safeExecute(async () => {
             this.currentPath = path;
-            this.currentRootPath =path;
+            this.currentRootPath = path;
             this.isBusy = true;
-            await this.loadFTPItems(); // 加载FTP项
+            await this.loadFTPItems(this.currentPath); // 加载FTP项
             this.refresh(); // 更新TreeView
             vscode.window.showInformationMessage('FTP directory refreshed successfully'); // 刷新成功提示
         });
@@ -192,7 +194,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     }
 
     // 加载并获取当前目录下的FTP项目。
-    private async loadFTPItems(path: string = '/'): Promise<FtpItem[]> {
+    private async loadFTPItems(path: string = '/', showPreLevel: boolean = false): Promise<FtpItem[]> {
         if (typeof path !== 'string') {
             vscode.window.showErrorMessage(`Invalid path: expected a string but got ${typeof path}`);
             return []; // 确保返回一个空数组以防止进一步错误
@@ -201,9 +203,19 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
         try {
             const items: FtpItem[] = [];
             const files = await this.ftpClient.list(path); // 从FTP服务器获取文件列表
+            if (showPreLevel) {
+                items.push(new FtpItem(
+                    "[To Parent Directory]",
+                    "../",
+                    this.getParentPath(path),
+                    false
+                ));
+                console.log("getParentPath", this.getParentPath(path));
+            }
             items.push(...files.map(file => new FtpItem(
                 file.name,
                 path === '/' ? `/${file.name}` : `${path}/${file.name}`,
+                path,
                 file.isDirectory
             )));
 
@@ -212,6 +224,32 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
             vscode.window.showErrorMessage(`Failed to load items: ${error.message}`);
             return [];
         }
+    }
+
+    private getParentPath(path: string): string {
+        // 如果路径是根路径，返回根路径本身
+        if (path === '/' || path === '') {
+            return '/';
+        }
+
+        // 移除路径末尾的斜杠
+        if (path.endsWith('/')) {
+            path = path.slice(0, -1);
+        }
+
+        // 获取最后一个斜杠的位置
+        const lastSlashIndex = path.lastIndexOf('/');
+
+        // 如果没有斜杠，返回根路径
+        if (lastSlashIndex === -1) {
+            return '/';
+        }
+
+        // 获取父路径
+        const parentPath = path.substring(0, lastSlashIndex);
+
+        // 如果父路径为空，返回根路径
+        return parentPath === '' ? '/' : parentPath;
     }
 
     /**
@@ -224,13 +262,20 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     getTreeItem(element: FtpItem): vscode.TreeItem {
         return element;
     }
-
+    /**
+     * 回到上一级
+     */
+    async backParentDirectory(item: FtpItem) {
+        const parentPath = item.parentPath;
+        await this.refreshFTPItems(parentPath);
+    }
     /**
      * 获取子节点，确保每次展开文件夹时获取最新数据。
      */
     async getChildren(element?: FtpItem): Promise<FtpItem[]> {
         if (!element) {
-            return this.loadFTPItems(this.currentPath); // 根目录
+            let showPreLevel = this.currentPath === "/" ? false : true;
+            return this.loadFTPItems(this.currentPath, showPreLevel); // 根目录
         } else if (element.isDirectory) {
             return this.loadFTPItems(element.path); // 获取子目录
         }
@@ -243,18 +288,27 @@ export class FtpItem extends vscode.TreeItem {
     constructor(
         public readonly label: string,
         public readonly path: string,
+        public readonly parentPath: string,
         public readonly isDirectory: boolean
     ) {
         super(
             label,
             isDirectory ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
         );
+        if (path === "../" && parentPath) {
+            this.command = {
+                command: 'ftpExplorer.backParentDirectory',
+                title: 'Back Parent Directory',
+                arguments: [this]
+            }
+        } else {
+            this.command = isDirectory ? undefined : {
+                command: 'ftpExplorer.openFile',
+                title: 'Open File',
+                arguments: [this.path]
+            };
+        }
 
-        this.command = isDirectory ? undefined : {
-            command: 'ftpExplorer.openFile',
-            title: 'Open File',
-            arguments: [this.path]
-        };
 
         this.contextValue = isDirectory ? 'folder' : 'file';
     }

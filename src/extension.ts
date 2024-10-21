@@ -28,6 +28,11 @@ function activate(context: vscode.ExtensionContext) {
             ftpTreeProvider.downloadToDirectory(item);
         })
     );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ftpExplorer.backParentDirectory', (item: FtpItem) => {
+            ftpTreeProvider.backParentDirectory(item);
+        })
+    );
 
     // 注册设置当前路径为一级目录的命令
     context.subscriptions.push(vscode.commands.registerCommand('ftpExplorer.setRootDirectory', async (item: FtpItem) => {

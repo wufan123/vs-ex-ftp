@@ -14,6 +14,37 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "FTP Client Settings",
+      "properties": {
+        "ftpClient.host": {
+          "type": "string",
+          "default": "192.168.63.174",
+          "description": "The FTP server host."
+        },
+        "ftpClient.user": {
+          "type": "string",
+          "default": "udc",
+          "description": "The FTP server username."
+        },
+        "ftpClient.password": {
+          "type": "string",
+          "default": "jishubu@4399.com",
+          "description": "The FTP server password."
+        },
+        "ftpClient.secure": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use secure FTP."
+        },
+        "ftpClient.path": {
+          "type": "string",
+          "default": "/",
+          "description": "The FTP server path."
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -51,6 +82,11 @@
       {
         "command": "ftpExplorer.setRootDirectory",
         "title": "Set Current Path as Root Directory",
+        "category": "FTP Explorer"
+      },
+      {
+        "command": "ftpExplorer.backParentDirectory",
+        "title": "Back Parent Directory",
         "category": "FTP Explorer"
       }
     ],

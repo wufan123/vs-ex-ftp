@@ -30,8 +30,11 @@ function activate(context: vscode.ExtensionContext) {
     );
     //注册删除文件命令
     context.subscriptions.push(vscode.commands.registerCommand('ftpExplorer.deleteItem', async (item: FtpItem) => {
-        const treeProvider = new FtpTreeProvider();
-        await treeProvider.deleteFTPItem(item);
+        await ftpTreeProvider.deleteFTPItem(item);
+    }));
+    // 注册上传命令
+    context.subscriptions.push(vscode.commands.registerCommand('ftpExplorer.uploadItem', async () => {
+        await ftpTreeProvider.uploadToFTP();
     }));
     // 注册回到上一级命令
     context.subscriptions.push(

@@ -93,6 +93,12 @@
         "command": "ftpExplorer.deleteItem",
         "title": "Delete FTP Item",
         "category": "FTP Explorer"
+      },
+      {
+        "command": "ftpExplorer.uploadItem",
+        "title": "Upload to FTP",
+        "category": "FTP Explorer",  
+        "icon": "media/upload.svg"
       }
     ],
     "menus": {
@@ -124,6 +130,11 @@
         {
           "command": "ftpExplorer.refresh",
           "when": "view == ftp-explorer && ftpExplorer.refreshEnabled",
+          "group": "navigation"
+        },
+        {
+          "command": "ftpExplorer.uploadItem",
+          "when": "view == ftp-explorer",
           "group": "navigation"
         }
       ]

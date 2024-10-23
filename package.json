@@ -9,39 +9,36 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:extension.copyCodeAsImage"
-  ],
   "main": "./dist/extension.js",
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "FTP Client Settings",
+      "title": "%ftpClientSettings%",
       "properties": {
         "ftpClient.host": {
           "type": "string",
           "default": "192.168.63.174",
-          "description": "The FTP server host."
+          "description": "%ftpClient.host%"
         },
         "ftpClient.user": {
           "type": "string",
           "default": "udc",
-          "description": "The FTP server username."
+          "description": "%ftpClient.user%"
         },
         "ftpClient.password": {
           "type": "string",
           "default": "jishubu@4399.com",
-          "description": "The FTP server password."
+          "description": "%ftpClient.password%"
         },
         "ftpClient.secure": {
           "type": "boolean",
           "default": false,
-          "description": "Use secure FTP."
+          "description": "%ftpClient.secure%"
         },
         "ftpClient.path": {
           "type": "string",
           "default": "/",
-          "description": "The FTP server path."
+          "description": "%ftpClient.path%"
         }
       }
     },
@@ -49,7 +46,7 @@
       "activitybar": [
         {
           "id": "udc-web",
-          "title": "UDC WEB",
+          "title": "%udcWebTitle%",
           "icon": "media/icon.svg"
         }
       ]
@@ -58,46 +55,46 @@
       "udc-web": [
         {
           "id": "ftp-explorer",
-          "name": "ftp-explorer",
-          "contextualTitle": "UDC WEB"
+          "name": "%ftpExplorerName%",
+          "contextualTitle": "%udcWebTitle%"
         }
       ]
     },
     "commands": [
       {
         "command": "extension.copyCodeAsImage",
-        "title": "Copy Code as Image"
+        "title": "%extension.copyCodeAsImage%"
       },
       {
         "command": "ftpExplorer.refresh",
-        "title": "Refresh FTP Directory",
-        "category": "FTP Explorer",
+        "title": "%ftpExplorer.refresh%",
+        "category": "%ftpExplorerCategory%",
         "icon": "$(refresh)"
       },
       {
         "command": "ftpExplorer.downloadToDirectory",
-        "title": "Download FTP Item",
-        "category": "FTP Explorer"
+        "title": "%ftpExplorer.downloadToDirectory%",
+        "category": "%ftpExplorerCategory%"
       },
       {
         "command": "ftpExplorer.setRootDirectory",
-        "title": "Set Current Path as Root Directory",
-        "category": "FTP Explorer"
+        "title": "%ftpExplorer.setRootDirectory%",
+        "category": "%ftpExplorerCategory%"
       },
       {
         "command": "ftpExplorer.backParentDirectory",
-        "title": "Back Parent Directory",
-        "category": "FTP Explorer"
+        "title": "%ftpExplorer.backParentDirectory%",
+        "category": "%ftpExplorerCategory%"
       },
       {
         "command": "ftpExplorer.deleteItem",
-        "title": "Delete FTP Item",
-        "category": "FTP Explorer"
+        "title": "%ftpExplorer.deleteItem%",
+        "category": "%ftpExplorerCategory%"
       },
       {
         "command": "ftpExplorer.uploadItem",
-        "title": "Upload to FTP",
-        "category": "FTP Explorer",  
+        "title": "%ftpExplorer.uploadItem%",
+        "category": "%ftpExplorerCategory%",
         "icon": "media/upload.svg"
       }
     ],
@@ -168,6 +165,7 @@
   "dependencies": {
     "basic-ftp": "^5.0.5",
     "clipboardy": "^4.0.0",
-    "puppeteer": "^23.5.3"
+    "puppeteer": "^23.5.3",
+    "vscode-nls-i18n": "^0.2.4"
   }
 }

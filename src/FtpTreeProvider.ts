@@ -1,10 +1,10 @@
-// extension.ts
+
 import * as vscode from 'vscode';
 import * as ftp from 'basic-ftp';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
-
+const {localize } = require("vscode-nls-i18n"); 
 class FTPClientWrapper {
     private client: ftp.Client;
     private isConnecting: boolean = false;
@@ -27,7 +27,7 @@ class FTPClientWrapper {
         try {
             await this.client.access({ host, user, password, secure });
         } catch (error) {
-            vscode.window.showErrorMessage(`FTP Connection Error: ${error.message}`);
+            vscode.window.showErrorMessage(localize('ftp.connection.error', error.message));
             throw error;
         } finally {
             this.isConnecting = false;
@@ -46,7 +46,7 @@ class FTPClientWrapper {
         return vscode.window.withProgress(
             {
                 location: vscode.ProgressLocation.Notification,
-                title: `Downloading ${path.basename(remotePath)}...`,
+                title: localize('ftp.downloading', path.basename(remotePath)),
                 cancellable: false
             },
             async (progress) => {
@@ -163,17 +163,17 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     readonly onDidChangeTreeData: vscode.Event<FtpItem | undefined> = this._onDidChangeTreeData.event;
 
     public ftpClient: FTPClientWrapper;
-    private currentPath: string = '/'; // 当前刷新路径
-    private currentRootPath: string = '/'; // 当前一级目录路径
+    private currentPath: string = '/';
+    private currentRootPath: string = '/';
     public isBusy: boolean = false;
 
     constructor() {
         this.ftpClient = new FTPClientWrapper();
         const config = vscode.workspace.getConfiguration('ftpClient');
         this.currentPath = this.currentRootPath = config.get<string>('path', '/');
-        // 启用刷新按钮
         vscode.commands.executeCommand('setContext', 'ftpExplorer.refreshEnabled', true);
     }
+
     public getCurrentRootPath() {
         return this.currentRootPath;
     }
@@ -183,7 +183,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
             canSelectFiles: false,
             canSelectFolders: true,
             canSelectMany: false,
-            openLabel: 'Select Destination Directory'
+            openLabel: localize('ftp.provider.selectDestinationDirectory') // 更新本地化前缀
         });
 
         if (folderUris && folderUris[0]) {
@@ -191,7 +191,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
             const sourcePath = item.path;
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                title: `Downloading ${item.label}...`,
+                title: localize('ftp.provider.downloading', item.label), // 更新本地化前缀
                 cancellable: false
             }, async (progress) => {
                 try {
@@ -200,38 +200,31 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
                     } else {
                         await this.ftpClient.downloadFile(sourcePath, targetDir, progress);
                     }
-                    vscode.window.showInformationMessage(`Downloaded ${item.label} to ${targetDir}`);
+                    vscode.window.showInformationMessage(localize('ftp.provider.downloadSuccess',item.label, targetDir)); // 更新本地化前缀
                 } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to download: ${error.message}`);
+                    vscode.window.showErrorMessage(localize('ftp.provider.downloadFailed', error.message)); // 更新本地化前缀
                 }
             });
         }
     }
 
-    // 设置当前路径为一级目录
     public async setRootDirectory(item: FtpItem) {
-        this.currentRootPath = item.path; // 更新当前根路径
-        // 更新插件配置，将当前根路径保存到 'ftpClient.path'
+        this.currentRootPath = item.path;
         const config = vscode.workspace.getConfiguration('ftpClient');
         await config.update('path', this.currentRootPath, vscode.ConfigurationTarget.Global);
-        await this.refreshFTPItems(this.currentRootPath); // 刷新FTP项目 
+        await this.refreshFTPItems(this.currentRootPath);
     }
 
-    /**
-     * 刷新当前路径下的FTP目录，并更新TreeView。
-     */
     async refreshFTPItems(path: string = '/'): Promise<void> {
-        // 禁用刷新按钮
         vscode.commands.executeCommand('setContext', 'ftpExplorer.refreshEnabled', false);
         await this.safeExecute(async () => {
             this.currentPath = path;
             this.currentRootPath = path;
             this.isBusy = true;
-            await this.loadFTPItems(this.currentPath); // 加载FTP项
-            this.refresh(); // 更新TreeView
-            vscode.window.showInformationMessage('FTP directory refreshed successfully'); // 刷新成功提示
+            await this.loadFTPItems(this.currentPath);
+            this.refresh();
+            vscode.window.showInformationMessage(localize('ftp.provider.refreshSuccess')); // 更新本地化前缀
         });
-        // 启用刷新按钮
         vscode.commands.executeCommand('setContext', 'ftpExplorer.refreshEnabled', true);
     }
 
@@ -239,25 +232,24 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
         try {
             await task();
         } catch (error) {
-            vscode.window.showErrorMessage(`FTP Error: ${error.message}`);
+            vscode.window.showErrorMessage(localize('ftp.provider.ftpError',error.message)); // 更新本地化前缀
         } finally {
-            this.isBusy = false; // 确保任务完成后重置忙状态
+            this.isBusy = false;
         }
     }
 
-    // 加载并获取当前目录下的FTP项目。
     private async loadFTPItems(path: string = '/', showPreLevel: boolean = false): Promise<FtpItem[]> {
         if (typeof path !== 'string') {
-            vscode.window.showErrorMessage(`Invalid path: expected a string but got ${typeof path}`);
-            return []; // 确保返回一个空数组以防止进一步错误
+            vscode.window.showErrorMessage(localize('ftp.provider.invalidPath',typeof path)); // 更新本地化前缀
+            return [];
         }
 
         try {
             const items: FtpItem[] = [];
-            const files = await this.ftpClient.list(path); // 从FTP服务器获取文件列表
+            const files = await this.ftpClient.list(path);
             if (showPreLevel) {
                 items.push(new FtpItem(
-                    "[To Parent Directory]",
+                    localize('ftp.provider.toParentDirectory'), // 更新本地化前缀
                     "../",
                     this.getPathParentPath(path),
                     false
@@ -272,60 +264,49 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
 
             return items;
         } catch (error) {
-            vscode.window.showErrorMessage(`Failed to load items: ${error.message}`);
+            vscode.window.showErrorMessage(localize('ftp.provider.loadItemsFailed', error.message)); // 更新本地化前缀
             return [];
         }
     }
 
     private getPathParentPath(path: string): string {
-        // 如果路径是根路径，返回根路径本身
         if (path === '/' || path === '') {
             return '/';
         }
 
-        // 移除路径末尾的斜杠
         if (path.endsWith('/')) {
             path = path.slice(0, -1);
         }
 
-        // 获取最后一个斜杠的位置
         const lastSlashIndex = path.lastIndexOf('/');
 
-        // 如果没有斜杠，返回根路径
         if (lastSlashIndex === -1) {
             return '/';
         }
 
-        // 获取父路径
         const parentPath = path.substring(0, lastSlashIndex);
-
-        // 如果父路径为空，返回根路径
         return parentPath === '' ? '/' : parentPath;
     }
 
-    // 新增删除文件的方法
     public async deleteFTPItem(item: FtpItem): Promise<void> {
         if (this.isBusy) {
-            vscode.window.showErrorMessage('Please wait for the current task to complete.');
+            vscode.window.showErrorMessage(localize('ftp.provider.waitForTask')); // 更新本地化前缀
             return;
         }
 
-        const confirmDelete = await vscode.window.showWarningMessage(`Are you sure you want to delete ${item.label}?`, 'Yes', 'No');
-        if (confirmDelete !== 'Yes') return;
+        const confirmDelete = await vscode.window.showWarningMessage(localize('ftp.provider.confirmDelete',item.label), localize('ftp.provider.yes'), localize('ftp.provider.no')); // 更新本地化前缀
+        if (confirmDelete !== localize('ftp.provider.yes', 'Yes')) return;
         this.isBusy = true;
         try {
-            // 调用FTP删除操作，文件或文件夹
             if (item.isDirectory) {
                 await this.ftpClient.removeDirectory(item.path);
             } else {
                 await this.ftpClient.removeFile(item.path);
             }
-            // 删除成功提示
-            vscode.window.showInformationMessage(`Successfully deleted ${item.label}`);
-            // 删除成功后刷新当前目录
+            vscode.window.showInformationMessage(localize('ftp.provider.deleteSuccess',item.label)); // 更新本地化前缀
             await this.refreshFTPItems(this.currentPath);
         } catch (error) {
-            vscode.window.showErrorMessage(`Failed to delete ${item.label}: ${error.message}`);
+            vscode.window.showErrorMessage(localize('ftp.provider.deleteFailed', 'Failed to delete {0}: {1}', item.label, error.message)); // 更新本地化前缀
         } finally {
             this.isBusy = false;
         }
@@ -333,22 +314,22 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
 
     public async uploadToFTP() {
         if (this.isBusy) {
-            vscode.window.showErrorMessage('Please wait for the current task to complete.');
+            vscode.window.showErrorMessage(localize('ftp.provider.waitForTask')); // 更新本地化前缀
             return;
         }
 
         const workspaceFolder = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
         if (!workspaceFolder) {
-            vscode.window.showErrorMessage('No workspace folder found.');
+            vscode.window.showErrorMessage(localize('ftp.provider.noWorkspaceFolder', 'No workspace folder found.')); // 更新本地化前缀
             return;
         }
 
-        const actions = ['上传文件夹', '上传文件'];
+        const actions = [localize('ftp.provider.uploadFolder'), localize('ftp.provider.uploadFile')]; // 更新本地化前缀
         const action = await vscode.window.showQuickPick(actions, {
-            placeHolder: '选择上传操作'
+            placeHolder: localize('ftp.provider.chooseUploadAction') // 更新本地化前缀
         });
 
-        const isSelectFolders = action === '上传文件夹';
+        const isSelectFolders = action === localize('ftp.provider.uploadFolder');
 
         const selectedFiles = await vscode.window.showOpenDialog({
             canSelectFolders: isSelectFolders,
@@ -365,16 +346,16 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
         const defaultRemotePath = this.currentRootPath ? path.posix.join(this.currentRootPath, workspaceFolderName) : '/';
 
         const remotePath = await vscode.window.showInputBox({
-            prompt: 'Enter the destination path on the FTP server',
+            prompt: localize('ftp.provider.enterDestinationPath'), // 更新本地化前缀
             value: defaultRemotePath,
-            placeHolder: 'e.g., /uploads/myfile'
+            placeHolder: localize('ftp.provider.examplePath') // 更新本地化前缀
         });
 
         if (!remotePath) return;
 
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: `Uploading to ${remotePath}...`,
+            title: localize('ftp.provider.uploadingTo', remotePath), // 更新本地化前缀
             cancellable: false
         }, async (progress) => {
             try {
@@ -385,59 +366,45 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
                     const isDirectory = (await vscode.workspace.fs.stat(file)).type === vscode.FileType.Directory;
 
                     if (isDirectory) {
-                        // 如果是文件夹，保持层级结构上传
                         await this.uploadDirectoryWithStructure(localPath, remotePath, progress);
                     } else {
-                        // 如果是文件，直接上传文件，不保留本地目录结构
-                        const fileName = path.basename(localPath);  // 仅获取文件名
-                        const remoteTargetPath = path.posix.join(remotePath, fileName);  // 直接上传到指定路径
-                        // 确保文件的父目录已创建
+                        const fileName = path.basename(localPath); 
+                        const remoteTargetPath = path.posix.join(remotePath, fileName); 
                         const remoteFileDir = path.posix.dirname(remoteTargetPath);
-                        await this.ftpClient.createDirectory(remoteFileDir); // 递归创建父目录
+                        await this.ftpClient.createDirectory(remoteFileDir); 
                         await this.ftpClient.uploadFile(localPath, remoteTargetPath, progress);
                     }
-                    vscode.window.showInformationMessage(`Successfully uploaded ${localPath} to ${remoteTargetPath}`);
+                    vscode.window.showInformationMessage(localize('ftp.provider.uploadSuccess', localPath, remoteTargetPath)); // 更新本地化前缀
                 }
                 await this.refreshFTPItems(this.currentPath);
             } catch (error) {
-                vscode.window.showErrorMessage(`Failed to upload: ${error.message}`);
+                vscode.window.showErrorMessage(localize('ftp.provider.uploadFailed',error.message)); // 更新本地化前缀
             } finally {
                 this.isBusy = false;
             }
         });
     }
 
-
-    // 递归上传文件夹并保持结构
     private async uploadDirectoryWithStructure(localPath: string, remotePath: string, progress: vscode.Progress<{ increment: number }>) {
         const fs = require('fs').promises;
         const path = require('path');
 
-        // 创建远程路径上的文件夹
         await this.ftpClient.createDirectory(remotePath);
 
-        // 获取本地文件夹中的文件和子文件夹
         const items = await fs.readdir(localPath, { withFileTypes: true });
 
         for (const item of items) {
             const itemLocalPath = path.join(localPath, item.name);
-            const itemRemotePath = path.posix.join(remotePath, item.name); // 在 remotePath 上拼接
+            const itemRemotePath = path.posix.join(remotePath, item.name);
 
             if (item.isDirectory()) {
-                // 递归上传子文件夹
                 await this.uploadDirectoryWithStructure(itemLocalPath, itemRemotePath, progress);
             } else {
-                // 上传文件
                 await this.ftpClient.uploadFile(itemLocalPath, itemRemotePath, progress);
             }
         }
     }
 
-
-
-    /**
-     * 触发TreeView更新。
-     */
     public refresh(): void {
         this._onDidChangeTreeData.fire(undefined);
     }
@@ -445,16 +412,12 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     getTreeItem(element: FtpItem): vscode.TreeItem {
         return element;
     }
-    /**
-     * 回到上一级
-     */
+
     async backParentDirectory(item: FtpItem) {
         const parentPath = item.parentPath;
         await this.refreshFTPItems(parentPath);
     }
-    /**
-     * 获取子节点，确保每次展开文件夹时获取最新数据。
-     */
+
     async getChildren(element?: FtpItem): Promise<FtpItem[]> {
         if (!element) {
             let showPreLevel = this.currentPath === "/" ? false : true;

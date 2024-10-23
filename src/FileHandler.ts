@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+const {localize } = require("vscode-nls-i18n");
 
 export class FileHandler {
     private statusBarItem: vscode.StatusBarItem;
@@ -16,7 +17,7 @@ export class FileHandler {
         await vscode.window.withProgress(
             {
                 location: vscode.ProgressLocation.Window,
-                title: "Opening File...",
+                title: localize('openFile.progress'),
                 cancellable: false
             },
             async () => {
@@ -36,7 +37,7 @@ export class FileHandler {
     private displayFileMetadata(filePath: string): void {
         fs.stat(filePath, (err, stats) => {
             if (err) {
-                vscode.window.showErrorMessage(`Error retrieving file metadata: ${err.message}`);
+                vscode.window.showErrorMessage(localize('displayFileMetadata.error',err.message));
                 return;
             }
 
@@ -45,7 +46,7 @@ export class FileHandler {
             // const modifiedTime = stats.mtime.toLocaleTimeString();
 
             // 设置状态栏内容并显示
-            this.statusBarItem.text = `Size: ${fileSize}`;
+            this.statusBarItem.text = localize('displayFileMetadata.size',fileSize);
             this.statusBarItem.show();
         });
     }
@@ -149,6 +150,5 @@ export class FileHandler {
         </body>
         </html>`;
     }
-
     
 }

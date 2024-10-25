@@ -64,7 +64,6 @@ class FTPClientWrapper {
     }
     public async downloadDirectory(remotePath: string, localDir: string, progress: vscode.Progress<{ message?: string }>) {
         await this.connect();
-
         // 创建本地根文件夹，并包括该文件夹在递归下载
         const folderName = path.basename(remotePath);
         const localFolderPath = path.join(localDir, folderName);
@@ -75,8 +74,8 @@ class FTPClientWrapper {
     }
 
     private async _downloadDirectoryRecursively(remotePath: string, localDir: string, progress: vscode.Progress<{ message?: string }>) {
+        await this.connect();
         const remoteItems = await this.client.list(remotePath);
-
         for (const item of remoteItems) {
             const itemRemotePath = path.join(remotePath, item.name);
             const itemLocalPath = path.join(localDir, item.name);
@@ -118,6 +117,7 @@ class FTPClientWrapper {
 
     // 上传文件
     public async uploadFile(localPath: string, remotePath: string, progress?: vscode.Progress<{ increment: number }>) {
+        await this.connect();
         try {
             await this.client.uploadFrom(localPath, remotePath);
         } catch (error) {
@@ -128,6 +128,7 @@ class FTPClientWrapper {
 
     // 上传文件夹
     public async uploadDirectory(localDir: string, remoteDir: string, progress?: vscode.Progress<{ increment: number }>) {
+        await this.connect();
         try {
             await this.client.uploadFromDir(localDir, remoteDir);
         } catch (error) {

@@ -5,9 +5,11 @@
   "ftpClient.password": "FTP 服务器密码。",
   "ftpClient.secure": "使用安全 FTP。",
   "ftpClient.path": "FTP 服务器路径。",
+  "ftpClient.baseUrl.description": "用于在浏览器中预览文件的基础 URL",
   "udcWebTitle": "UDC WEB",
   "ftpExplorerName": "FTP 浏览器",
   "extension.copyCodeAsImage": "复制代码为图片",
+  "ftpExplorer.openSettings": "打开FTP设置",
   "ftpExplorer.refresh": "刷新 FTP 目录",
   "ftpExplorer.downloadToDirectory": "下载 FTP 项目",
   "ftpExplorer.setRootDirectory": "设置当前路径为根目录",
@@ -56,5 +58,9 @@
   "ftp.provider.examplePath": "例如: /uploads/myfile",
   "ftp.provider.uploadingTo": "正在上传到 {0}...",
   "ftp.provider.uploadSuccess": "成功上传 {0} 到 {1}",
-  "ftp.provider.uploadFailed": "上传失败: {0}"
+  "ftp.provider.uploadFailed": "上传失败: {0}",
+  "ftpExplorer.previewHtml.title": "在浏览器中打开",
+  "ftpExplorer.previewHtml.errorMessage": "无法在浏览器中打开：",
+  "ftpExplorer.previewHtml.notHtmlWarning": "该文件不是 .html 文件",
+  "ftpExplorer.openBrowser.errorMessage": "无法打开浏览器: {0}"
 }

@@ -13,6 +13,7 @@ class FTPClientWrapper {
         this.client = new ftp.Client();
         this.client.ftp.verbose = true;
     }
+   
 
     async connect(): Promise<void> {
         // 防止并发连接

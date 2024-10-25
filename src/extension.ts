@@ -3,6 +3,7 @@ import { CodeImageGenerator } from './CodeImageGenerator';
 import { FtpItem, FtpTreeProvider } from './FtpTreeProvider';
 import { FileHandler } from './FileHandler';
 const nls = require("vscode-nls-i18n");
+import { BrowserOpener } from './BrowserOpener';
 
 function activate(context: vscode.ExtensionContext) {
     nls.init(context.extensionPath);
@@ -18,6 +19,13 @@ function activate(context: vscode.ExtensionContext) {
     const ftpTreeProvider = new FtpTreeProvider();
     vscode.window.registerTreeDataProvider('ftp-explorer', ftpTreeProvider);
     ftpTreeProvider.refresh();
+    //注册打开设置
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ftpExplorer.openSettings', () => {
+            // 打开设置页面
+            vscode.commands.executeCommand('workbench.action.openSettings', 'ftpClient');
+        })
+    );
     // 注册刷新命令
     const refreshCommand = vscode.commands.registerCommand('ftpExplorer.refresh', async () => {
         await ftpTreeProvider.refreshFTPItems(ftpTreeProvider.getCurrentRootPath());
@@ -56,6 +64,14 @@ function activate(context: vscode.ExtensionContext) {
         const tempFilePath = await ftpTreeProvider.ftpClient.downloadToTempFile(filePath);
         await fileHandler.openFile(tempFilePath);
     }));
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ftpExplorer.previewHtml', async (item: vscode.Uri) => {
+            const browserOpener = new BrowserOpener();
+            await browserOpener.openUrlInBrowser(item);
+
+        })
+    );
 }
 
 function deactivate() { }

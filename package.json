@@ -39,6 +39,11 @@
           "type": "string",
           "default": "/",
           "description": "%ftpClient.path%"
+        },
+        "ftpClient.baseUrl": {
+          "type": "string",
+          "default": "http://192.168.63.174",
+          "description": "%ftpClient.baseUrl.description%"
         }
       }
     },
@@ -64,6 +69,10 @@
       {
         "command": "extension.copyCodeAsImage",
         "title": "%extension.copyCodeAsImage%"
+      },
+      {
+        "command": "ftpExplorer.openSettings",
+        "title": "%ftpExplorer.openSettings%"
       },
       {
         "command": "ftpExplorer.refresh",
@@ -95,7 +104,12 @@
         "command": "ftpExplorer.uploadItem",
         "title": "%ftpExplorer.uploadItem%",
         "category": "%ftpExplorerCategory%",
-        "icon": "media/upload.svg"
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "ftpExplorer.previewHtml",
+        "title": "%ftpExplorer.previewHtml.title%",
+        "category": "FTP Explorer"
       }
     ],
     "menus": {
@@ -119,7 +133,12 @@
         },
         {
           "command": "ftpExplorer.setRootDirectory",
-          "when": "view == ftp-explorer && !folder",
+          "when": "view == ftp-explorer && viewItem == folder",
+          "group": "navigation"
+        },
+        {
+          "command": "ftpExplorer.previewHtml",
+          "when": "view == ftp-explorer&&viewItem == file",
           "group": "navigation"
         }
       ],

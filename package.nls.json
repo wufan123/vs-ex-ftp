@@ -5,9 +5,11 @@
   "ftpClient.password": "The FTP server password.",
   "ftpClient.secure": "Use secure FTP.",
   "ftpClient.path": "The FTP server path.",
+  "ftpClient.baseUrl.description": "The base URL for previewing files in the browser",
   "udcWebTitle": "UDC WEB",
   "ftpExplorerName": "FTP Explorer",
   "extension.copyCodeAsImage": "Copy Code as Image",
+  "ftpExplorer.openSettings": "Open FTP Client Settings",
   "ftpExplorer.refresh": "Refresh FTP Directory",
   "ftpExplorer.downloadToDirectory": "Download FTP Item",
   "ftpExplorer.setRootDirectory": "Set Current Path as Root Directory",
@@ -25,7 +27,7 @@
   "ftp.connection.error": "FTP Connection Error: {0}",
   "ftp.downloading": "Downloading {0}...",
   "ftp.download.progress": "{0} - {1} bytes downloaded",
-  "ftp.directory.refresh.success": "FTP directory refreshed successfully", 
+  "ftp.directory.refresh.success": "FTP directory refreshed successfully",
   "ftp.delete.confirm": "Are you sure you want to delete {0}?",
   "ftp.delete.success": "Successfully deleted {0}",
   "ftp.upload.prompt": "Enter the destination path on the FTP server",
@@ -56,5 +58,9 @@
   "ftp.provider.examplePath": "e.g., /uploads/myfile",
   "ftp.provider.uploadingTo": "Uploading to {0}...",
   "ftp.provider.uploadSuccess": "Successfully uploaded {0} to {1}",
-  "ftp.provider.uploadFailed": "Failed to upload: {0}"
+  "ftp.provider.uploadFailed": "Failed to upload: {0}",
+  "ftpExplorer.previewHtml.title": "open in Browser",
+  "ftpExplorer.previewHtml.errorMessage": "Unable to open in browser: ",
+  "ftpExplorer.previewHtml.notHtmlWarning": "The file is not a .html file",
+  "ftpExplorer.openBrowser.errorMessage": "Failed to open browser: {0}"
 }

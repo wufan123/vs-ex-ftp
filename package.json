@@ -5,7 +5,7 @@
     "version": "0.0.3",
     "publisher": "waslong",
     "license": "MIT",
-    "repository": "",
+    "repository": "https://github.com/wufan123/vs-ex-ftp",
     "icon": "media/logo.png",
     "engines": {
         "vscode": "^1.94.0"

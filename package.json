@@ -155,7 +155,9 @@
         "watch-tests": "tsc -p . -w --outDir out",
         "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
         "lint": "eslint src",
-        "test": "vscode-test"
+        "test": "vscode-test",
+        "build": "vsce package",
+        "publish": "vsce publish"
     },
     "devDependencies": {
         "@types/mocha": "^10.0.8",

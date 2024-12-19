@@ -4,4 +4,4 @@ unpackage/
 .DS_Store
 .vscode
 dist
-.vsix
+*.vsix

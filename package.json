@@ -1,190 +1,178 @@
 {
-  "name": "vs-ex-udcweb",
-  "displayName": "UDCweb",
-  "description": "",
-  "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.94.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "main": "./dist/extension.js",
-  "contributes": {
-    "configuration": {
-      "type": "object",
-      "title": "%ftpClientSettings%",
-      "properties": {
-        "ftpClient.host": {
-          "type": "string",
-          "default": "192.168.63.174",
-          "description": "%ftpClient.host%"
-        },
-        "ftpClient.user": {
-          "type": "string",
-          "default": "udc",
-          "description": "%ftpClient.user%"
-        },
-        "ftpClient.password": {
-          "type": "string",
-          "default": "jishubu@4399.com",
-          "description": "%ftpClient.password%"
-        },
-        "ftpClient.secure": {
-          "type": "boolean",
-          "default": false,
-          "description": "%ftpClient.secure%"
-        },
-        "ftpClient.path": {
-          "type": "string",
-          "default": "/",
-          "description": "%ftpClient.path%"
-        },
-        "ftpClient.baseUrl": {
-          "type": "string",
-          "default": "http://192.168.63.174",
-          "description": "%ftpClient.baseUrl.description%"
-        }
-      }
+    "name": "vs-ex-ftp",
+    "displayName": "ftp explorer",
+    "description": "ftp explorer",
+    "version": "0.0.3",
+    "publisher": "waslong",
+    "license": "MIT",
+    "repository": "",
+    "icon": "media/logo.png",
+    "engines": {
+        "vscode": "^1.94.0"
     },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "udc-web",
-          "title": "%udcWebTitle%",
-          "icon": "media/icon.svg"
-        }
-      ]
-    },
-    "views": {
-      "udc-web": [
-        {
-          "id": "ftp-explorer",
-          "name": "%ftpExplorerName%",
-          "contextualTitle": "%udcWebTitle%"
-        }
-      ]
-    },
-    "commands": [
-      {
-        "command": "extension.copyCodeAsImage",
-        "title": "%extension.copyCodeAsImage%"
-      },
-      {
-        "command": "ftpExplorer.openSettings",
-        "title": "%ftpExplorer.openSettings%"
-      },
-      {
-        "command": "ftpExplorer.refresh",
-        "title": "%ftpExplorer.refresh%",
-        "category": "%ftpExplorerCategory%",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "ftpExplorer.downloadToDirectory",
-        "title": "%ftpExplorer.downloadToDirectory%",
-        "category": "%ftpExplorerCategory%"
-      },
-      {
-        "command": "ftpExplorer.setRootDirectory",
-        "title": "%ftpExplorer.setRootDirectory%",
-        "category": "%ftpExplorerCategory%"
-      },
-      {
-        "command": "ftpExplorer.backParentDirectory",
-        "title": "%ftpExplorer.backParentDirectory%",
-        "category": "%ftpExplorerCategory%"
-      },
-      {
-        "command": "ftpExplorer.deleteItem",
-        "title": "%ftpExplorer.deleteItem%",
-        "category": "%ftpExplorerCategory%"
-      },
-      {
-        "command": "ftpExplorer.uploadItem",
-        "title": "%ftpExplorer.uploadItem%",
-        "category": "%ftpExplorerCategory%",
-        "icon": "$(cloud-upload)"
-      },
-      {
-        "command": "ftpExplorer.previewHtml",
-        "title": "%ftpExplorer.previewHtml.title%",
-        "category": "FTP Explorer"
-      }
+    "categories": [
+        "Other"
     ],
-    "menus": {
-      "editor/context": [
-        {
-          "when": "editorTextFocus",
-          "command": "extension.copyCodeAsImage",
-          "group": "navigation"
+    "main": "./dist/extension.js",
+    "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "%ftpClientSettings%",
+            "properties": {
+                "ftpClient.1.host": {
+                    "type": "string",
+                    "description": "%ftpClient.host%"
+                },
+                "ftpClient.2.user": {
+                    "type": "string",
+                    "description": "%ftpClient.user%"
+                },
+                "ftpClient.3.password": {
+                    "type": "string",
+                    "description": "%ftpClient.password%"
+                },
+                "ftpClient.4.path": {
+                    "type": "string",
+                    "default": "/",
+                    "description": "%ftpClient.path%"
+                },
+                "ftpClient.5.baseUrl": {
+                    "type": "string",
+                    "description": "%ftpClient.baseUrl.description%"
+                },
+                "ftpClient.6.secure": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "%ftpClient.secure%"
+                }
+            }
+        },
+        "viewsContainers": {
+            "activitybar": [{
+                "id": "ftp",
+                "title": "%title%",
+                "icon": "media/icon.svg"
+            }]
+        },
+        "views": {
+            "ftp": [{
+                "id": "ftp-explorer",
+                "name": "%ftpExplorerName%",
+                "contextualTitle": "%title%"
+            }]
+        },
+        "viewsWelcome": [{
+            "view": "ftp-explorer",
+            "contents": "%viewsWelcome.ftpExplorer.contents%"
+        }],
+        "commands": [{
+                "command": "ftpExplorer.openSettings",
+                "title": "%ftpExplorer.openSettings%"
+            },
+            {
+                "command": "ftpExplorer.connectFTP",
+                "title": "%ftpExplorer.connectFTP%"
+            },
+            {
+                "command": "ftpExplorer.refresh",
+                "title": "%ftpExplorer.refresh%",
+                "category": "%ftpExplorerCategory%",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "ftpExplorer.downloadToDirectory",
+                "title": "%ftpExplorer.downloadToDirectory%",
+                "category": "%ftpExplorerCategory%"
+            },
+            {
+                "command": "ftpExplorer.setRootDirectory",
+                "title": "%ftpExplorer.setRootDirectory%",
+                "category": "%ftpExplorerCategory%"
+            },
+            {
+                "command": "ftpExplorer.backParentDirectory",
+                "title": "%ftpExplorer.backParentDirectory%",
+                "category": "%ftpExplorerCategory%"
+            },
+            {
+                "command": "ftpExplorer.deleteItem",
+                "title": "%ftpExplorer.deleteItem%",
+                "category": "%ftpExplorerCategory%"
+            },
+            {
+                "command": "ftpExplorer.uploadItem",
+                "title": "%ftpExplorer.uploadItem%",
+                "category": "%ftpExplorerCategory%",
+                "icon": "$(cloud-upload)"
+            },
+            {
+                "command": "ftpExplorer.previewHtml",
+                "title": "%ftpExplorer.previewHtml.title%",
+                "category": "FTP Explorer"
+            }
+        ],
+        "menus": {
+            "view/item/context": [{
+                    "command": "ftpExplorer.deleteItem",
+                    "when": "view == ftp-explorer && (viewItem == folder || viewItem == file)",
+                    "group": "navigation"
+                },
+                {
+                    "command": "ftpExplorer.downloadToDirectory",
+                    "when": "view == ftp-explorer && (viewItem == folder || viewItem == file)",
+                    "group": "navigation"
+                },
+                {
+                    "command": "ftpExplorer.setRootDirectory",
+                    "when": "view == ftp-explorer && viewItem == folder",
+                    "group": "navigation"
+                },
+                {
+                    "command": "ftpExplorer.previewHtml",
+                    "when": "view == ftp-explorer&&viewItem == file",
+                    "group": "navigation"
+                }
+            ],
+            "view/title": [{
+                    "command": "ftpExplorer.refresh",
+                    "when": "view == ftp-explorer && ftpExplorer.refreshEnabled && ftpExplorer.connected",
+                    "group": "navigation"
+                },
+                {
+                    "command": "ftpExplorer.uploadItem",
+                    "when": "view == ftp-explorer && ftpExplorer.connected",
+                    "group": "navigation"
+                }
+            ]
         }
-      ],
-      "view/item/context": [
-        {
-          "command": "ftpExplorer.deleteItem",
-          "when": "view == ftp-explorer && (viewItem == folder || viewItem == file)",
-          "group": "navigation"
-        },
-        {
-          "command": "ftpExplorer.downloadToDirectory",
-          "when": "view == ftp-explorer && (viewItem == folder || viewItem == file)",
-          "group": "navigation"
-        },
-        {
-          "command": "ftpExplorer.setRootDirectory",
-          "when": "view == ftp-explorer && viewItem == folder",
-          "group": "navigation"
-        },
-        {
-          "command": "ftpExplorer.previewHtml",
-          "when": "view == ftp-explorer&&viewItem == file",
-          "group": "navigation"
-        }
-      ],
-      "view/title": [
-        {
-          "command": "ftpExplorer.refresh",
-          "when": "view == ftp-explorer && ftpExplorer.refreshEnabled",
-          "group": "navigation"
-        },
-        {
-          "command": "ftpExplorer.uploadItem",
-          "when": "view == ftp-explorer",
-          "group": "navigation"
-        }
-      ]
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn run package",
+        "compile": "webpack",
+        "watch": "webpack --watch",
+        "package": "webpack --mode production --devtool hidden-source-map",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+        "lint": "eslint src",
+        "test": "vscode-test"
+    },
+    "devDependencies": {
+        "@types/mocha": "^10.0.8",
+        "@types/node": "20.x",
+        "@types/vscode": "^1.94.0",
+        "@typescript-eslint/eslint-plugin": "^8.7.0",
+        "@typescript-eslint/parser": "^8.7.0",
+        "@vscode/test-cli": "^0.0.10",
+        "@vscode/test-electron": "^2.4.1",
+        "eslint": "^9.11.1",
+        "ts-loader": "^9.5.1",
+        "typescript": "^5.6.2",
+        "webpack": "^5.95.0",
+        "webpack-cli": "^5.1.4"
+    },
+    "dependencies": {
+        "basic-ftp": "^5.0.5",
+        "vscode-nls-i18n": "^0.2.4"
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "yarn run package",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
-    "lint": "eslint src",
-    "test": "vscode-test"
-  },
-  "devDependencies": {
-    "@types/mocha": "^10.0.8",
-    "@types/node": "20.x",
-    "@types/vscode": "^1.94.0",
-    "@typescript-eslint/eslint-plugin": "^8.7.0",
-    "@typescript-eslint/parser": "^8.7.0",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1",
-    "eslint": "^9.11.1",
-    "ts-loader": "^9.5.1",
-    "typescript": "^5.6.2",
-    "webpack": "^5.95.0",
-    "webpack-cli": "^5.1.4"
-  },
-  "dependencies": {
-    "basic-ftp": "^5.0.5",
-    "clipboardy": "^4.0.0",
-    "puppeteer": "^23.5.3",
-    "vscode-nls-i18n": "^0.2.4"
-  }
 }

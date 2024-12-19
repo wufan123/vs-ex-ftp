@@ -20,15 +20,29 @@ class FTPClientWrapper {
         if (this.isConnecting || !this.client.closed) return;
         this.isConnecting = true;
         const config = vscode.workspace.getConfiguration('ftpClient');
-        const host = config.get<string>('host', '192.168.63.174');
-        const user = config.get<string>('user', 'udc');
-        const password = config.get<string>('password', 'jishubu@4399.com');
-        const secure = config.get<boolean>('secure', false);
-
+        const host = config.get<string>('1.host', '');
+        const user = config.get<string>('2.user', '');
+        const password = config.get<string>('3.password', '');
+        const secure = config.get<boolean>('6.secure', false);
+        if(!host||!user||!password){
+            let missingFields = [];
+            if (!host) missingFields.push("host");
+            if (!user) missingFields.push("user");
+            if (!password) missingFields.push("password");
+            let parStr = missingFields.join(", ");
+            let errMessage = localize('ftp.connection.error.notConfigured', parStr);
+            // vscode.window.showErrorMessage(errMessage);
+            this.isConnecting = false;
+            vscode.commands.executeCommand('workbench.action.openSettings', 'ftpClient');
+            vscode.commands.executeCommand('setContext', 'ftpExplorer.connected', false);
+            throw new Error(errMessage);
+        }
         try {
             await this.client.access({ host, user, password, secure });
+            vscode.commands.executeCommand('setContext', 'ftpExplorer.connected', true);
         } catch (error) {
             vscode.window.showErrorMessage(localize('ftp.connection.error', error.message));
+            vscode.commands.executeCommand('setContext', 'ftpExplorer.connected', false);
             throw error;
         } finally {
             this.isConnecting = false;
@@ -140,6 +154,7 @@ class FTPClientWrapper {
 
     // 创建目录，必要时递归创建父级目录
     public async createDirectory(remotePath: string): Promise<void> {
+        await this.connect();
         try {
             // 检查目录是否存在，不存在则创建
             await this.client.ensureDir(remotePath);
@@ -172,8 +187,12 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     constructor() {
         this.ftpClient = new FTPClientWrapper();
         const config = vscode.workspace.getConfiguration('ftpClient');
-        this.currentPath = this.currentRootPath = config.get<string>('path', '/');
+        this.currentPath = this.currentRootPath = config.get<string>('4.path', '/');
         vscode.commands.executeCommand('setContext', 'ftpExplorer.refreshEnabled', true);
+    }
+
+    public connectFTP() {
+         this.ftpClient.connect();
     }
 
     public getCurrentRootPath() {
@@ -213,7 +232,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     public async setRootDirectory(item: FtpItem) {
         this.currentRootPath = item.path;
         const config = vscode.workspace.getConfiguration('ftpClient');
-        await config.update('path', this.currentRootPath, vscode.ConfigurationTarget.Global);
+        await config.update('4.path', this.currentRootPath, vscode.ConfigurationTarget.Global);
         await this.refreshFTPItems(this.currentRootPath);
     }
 
@@ -225,7 +244,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
             this.isBusy = true;
             await this.loadFTPItems(this.currentPath);
             this.refresh();
-            vscode.window.showInformationMessage(localize('ftp.provider.refreshSuccess')); // 更新本地化前缀
+            vscode.window.showInformationMessage(localize('ftp.provider.refreshSuccess')); // 更新本地化前缀 
         });
         vscode.commands.executeCommand('setContext', 'ftpExplorer.refreshEnabled', true);
     }

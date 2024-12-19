@@ -16,12 +16,3 @@
 1. 打开 Visual Studio Code。
 2. 进入扩展视图 (`Ctrl+Shift+X`)。
 3. 搜索 `FTP Explorer` 并点击安装。
-
-## 配置
-
-在 VS Code 设置中配置 FTP 连接：
-
-```json
-"ftpClient": {
-    "path": "/your/default/path" // 设置默认路径
-}

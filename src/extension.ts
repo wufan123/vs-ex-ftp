@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { CodeImageGenerator } from './CodeImageGenerator';
 import { FtpItem, FtpTreeProvider } from './FtpTreeProvider';
 import { FileHandler } from './FileHandler';
 const nls = require("vscode-nls-i18n");
@@ -7,14 +6,6 @@ import { BrowserOpener } from './BrowserOpener';
 
 function activate(context: vscode.ExtensionContext) {
     nls.init(context.extensionPath);
-    // 注册代码复制为图片的命令
-    const codeImageGenerator = new CodeImageGenerator();
-    const disposable = vscode.commands.registerCommand('extension.copyCodeAsImage', async () => {
-        await codeImageGenerator.generateAndCopyImageFromSelection();
-    });
-
-
-    context.subscriptions.push(disposable);
     // 注册ftp视图
     const ftpTreeProvider = new FtpTreeProvider();
     vscode.window.registerTreeDataProvider('ftp-explorer', ftpTreeProvider);
@@ -24,6 +15,12 @@ function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('ftpExplorer.openSettings', () => {
             // 打开设置页面
             vscode.commands.executeCommand('workbench.action.openSettings', 'ftpClient');
+        })
+    );
+    //连接服务器
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ftpExplorer.connectFTP',async () => {
+            await vscode.commands.executeCommand('workbench.action.reloadWindow');
         })
     );
     // 注册刷新命令

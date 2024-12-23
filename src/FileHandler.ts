@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-const {localize } = require("vscode-nls-i18n");
+const { localize } = require("vscode-nls-i18n");
 
 export class FileHandler {
     private statusBarItem: vscode.StatusBarItem;
@@ -22,8 +22,7 @@ export class FileHandler {
             },
             async () => {
                 this.displayFileMetadata(filePath); // 显示文件元数据
-
-                if (this.isImageFile(filePath) || this.isSvgFile(filePath) || this.isVideoFile(filePath)) {
+                if (this.isImageFile(filePath) || this.isSvgFile(filePath) || this.isVideoFile(filePath) || this.isAudioFile(filePath)) {
                     await this.showMediaInWebView(filePath);
                 } else {
                     const document = await vscode.workspace.openTextDocument(filePath);
@@ -37,7 +36,7 @@ export class FileHandler {
     private displayFileMetadata(filePath: string): void {
         fs.stat(filePath, (err, stats) => {
             if (err) {
-                vscode.window.showErrorMessage(localize('displayFileMetadata.error',err.message));
+                vscode.window.showErrorMessage(localize('displayFileMetadata.error', err.message));
                 return;
             }
 
@@ -46,7 +45,7 @@ export class FileHandler {
             // const modifiedTime = stats.mtime.toLocaleTimeString();
 
             // 设置状态栏内容并显示
-            this.statusBarItem.text = localize('displayFileMetadata.size',fileSize);
+            this.statusBarItem.text = localize('displayFileMetadata.size', fileSize);
             this.statusBarItem.show();
         });
     }
@@ -57,7 +56,7 @@ export class FileHandler {
         const units = ['KB', 'MB', 'GB'];
         let size = sizeInBytes / 1024;
         let unitIndex = 0;
-        
+
         while (size >= 1024 && unitIndex < units.length - 1) {
             size /= 1024;
             unitIndex++;
@@ -83,6 +82,13 @@ export class FileHandler {
         return videoExtensions.includes(path.extname(filePath).toLowerCase());
     }
 
+    // 检查文件是否为音频文件
+    private isAudioFile(filePath: string): boolean {
+        const audioExtensions = ['.mp3', '.wav', '.ogg', '.flac', '.aac'];
+        return audioExtensions.some(ext => filePath.toLowerCase().endsWith(ext));
+    }
+
+
     // 在 WebView 中显示媒体文件
     private async showMediaInWebView(filePath: string): Promise<void> {
         const panel = vscode.window.createWebviewPanel(
@@ -101,6 +107,8 @@ export class FileHandler {
             panel.webview.html = this.getSvgHtmlContent(mediaUri);
         } else if (this.isVideoFile(filePath)) {
             panel.webview.html = this.getVideoHtmlContent(mediaUri);
+        } else if (this.isAudioFile(filePath)) {
+            panel.webview.html = this.getAudioPlayerHtml(mediaUri);
         } else {
             panel.webview.html = this.getImageHtmlContent(mediaUri);
         }
@@ -150,5 +158,24 @@ export class FileHandler {
         </body>
         </html>`;
     }
-    
+
+    // 返回用于播放音频的 HTML 内容
+    private getAudioPlayerHtml(videoUri: vscode.Uri): string {
+        return `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Audio Player</title>
+        </head>
+        <body>
+            <audio controls autoplay>
+                <source src="${videoUri}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </body>
+        </html>
+    `;
+    }
+
 }

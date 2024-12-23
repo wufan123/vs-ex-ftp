@@ -44,6 +44,11 @@
                     "type": "boolean",
                     "default": false,
                     "description": "%ftpClient.secure%"
+                },
+                "ftpClient.7.ignore": {
+                    "type": "string",
+                    "default": ".*\\.(zip|rar)$|\\.vscode$|node_modules",
+                    "description": "%ftpClient.ignore%"
                 }
             }
         },

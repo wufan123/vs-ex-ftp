@@ -1,6 +1,8 @@
 # Change Log
 
-- Initial release
+**20241220**：
+- 新增过滤文件功能，通过在配置中的正则表达式可以在上传时过滤不想上传的文件或文件夹
+- 新增预览音频文件 `mp3,wav,ogg,flac,aac`
 
 ## [Unreleased]
 

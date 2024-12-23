@@ -4,7 +4,7 @@ import * as ftp from 'basic-ftp';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
-const {localize } = require("vscode-nls-i18n"); 
+const { localize } = require("vscode-nls-i18n");
 class FTPClientWrapper {
     private client: ftp.Client;
     private isConnecting: boolean = false;
@@ -13,7 +13,7 @@ class FTPClientWrapper {
         this.client = new ftp.Client();
         this.client.ftp.verbose = true;
     }
-   
+
 
     async connect(): Promise<void> {
         // 防止并发连接
@@ -24,7 +24,7 @@ class FTPClientWrapper {
         const user = config.get<string>('2.user', '');
         const password = config.get<string>('3.password', '');
         const secure = config.get<boolean>('6.secure', false);
-        if(!host||!user||!password){
+        if (!host || !user || !password) {
             let missingFields = [];
             if (!host) missingFields.push("host");
             if (!user) missingFields.push("user");
@@ -192,7 +192,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     }
 
     public connectFTP() {
-         this.ftpClient.connect();
+        this.ftpClient.connect();
     }
 
     public getCurrentRootPath() {
@@ -221,7 +221,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
                     } else {
                         await this.ftpClient.downloadFile(sourcePath, targetDir, progress);
                     }
-                    vscode.window.showInformationMessage(localize('ftp.provider.downloadSuccess',item.label, targetDir)); // 更新本地化前缀
+                    vscode.window.showInformationMessage(localize('ftp.provider.downloadSuccess', item.label, targetDir)); // 更新本地化前缀
                 } catch (error) {
                     vscode.window.showErrorMessage(localize('ftp.provider.downloadFailed', error.message)); // 更新本地化前缀
                 }
@@ -253,7 +253,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
         try {
             await task();
         } catch (error) {
-            vscode.window.showErrorMessage(localize('ftp.provider.ftpError',error.message)); // 更新本地化前缀
+            vscode.window.showErrorMessage(localize('ftp.provider.ftpError', error.message)); // 更新本地化前缀
         } finally {
             this.isBusy = false;
         }
@@ -261,7 +261,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
 
     private async loadFTPItems(path: string = '/', showPreLevel: boolean = false): Promise<FtpItem[]> {
         if (typeof path !== 'string') {
-            vscode.window.showErrorMessage(localize('ftp.provider.invalidPath',typeof path)); // 更新本地化前缀
+            vscode.window.showErrorMessage(localize('ftp.provider.invalidPath', typeof path)); // 更新本地化前缀
             return [];
         }
 
@@ -315,7 +315,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
             return;
         }
 
-        const confirmDelete = await vscode.window.showWarningMessage(localize('ftp.provider.confirmDelete',item.label), localize('ftp.provider.yes'), localize('ftp.provider.no')); // 更新本地化前缀
+        const confirmDelete = await vscode.window.showWarningMessage(localize('ftp.provider.confirmDelete', item.label), localize('ftp.provider.yes'), localize('ftp.provider.no')); // 更新本地化前缀
         if (confirmDelete !== localize('ftp.provider.yes', 'Yes')) return;
         this.isBusy = true;
         try {
@@ -324,7 +324,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
             } else {
                 await this.ftpClient.removeFile(item.path);
             }
-            vscode.window.showInformationMessage(localize('ftp.provider.deleteSuccess',item.label)); // 更新本地化前缀
+            vscode.window.showInformationMessage(localize('ftp.provider.deleteSuccess', item.label)); // 更新本地化前缀
             await this.refreshFTPItems(this.currentPath);
         } catch (error) {
             vscode.window.showErrorMessage(localize('ftp.provider.deleteFailed', 'Failed to delete {0}: {1}', item.label, error.message)); // 更新本地化前缀
@@ -338,20 +338,54 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
             vscode.window.showErrorMessage(localize('ftp.provider.waitForTask')); // 更新本地化前缀
             return;
         }
-
         const workspaceFolder = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
         if (!workspaceFolder) {
             vscode.window.showErrorMessage(localize('ftp.provider.noWorkspaceFolder', 'No workspace folder found.')); // 更新本地化前缀
             return;
         }
-
-        const actions = [localize('ftp.provider.uploadFolder'), localize('ftp.provider.uploadFile')]; // 更新本地化前缀
+    
+        const workspaceFolderName = path.basename(workspaceFolder); // 获取当前工作目录名称
+        const uploadCurrentWorkspaceAction = localize('ftp.provider.uploadCurrentWorkspace', workspaceFolderName); // 动态生成 Action 名称
+        const actions = [
+            uploadCurrentWorkspaceAction,// 添加动态生成的选项
+            localize('ftp.provider.uploadFolder'),
+            localize('ftp.provider.uploadFile')
+        ];
+    
         const action = await vscode.window.showQuickPick(actions, {
             placeHolder: localize('ftp.provider.chooseUploadAction') // 更新本地化前缀
         });
-
+    
+        if (!action) return;
+    
+        this.isBusy = true;
+    
+        const defaultRemotePath = this.currentRootPath
+            ? path.posix.join(this.currentRootPath, workspaceFolderName)
+            : '/';
+    
+        if (action === uploadCurrentWorkspaceAction) {
+            // 上传当前工作目录
+            vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: localize('ftp.provider.uploadingWorkspace', defaultRemotePath), // 更新本地化前缀
+                cancellable: false
+            }, async (progress) => {
+                try {
+                    await this.uploadDirectoryWithStructure(workspaceFolder, defaultRemotePath, progress);
+                    vscode.window.showInformationMessage(localize('ftp.provider.uploadWorkspaceSuccess', workspaceFolder, defaultRemotePath)); // 更新本地化前缀
+                    await this.refreshFTPItems(this.currentPath);
+                } catch (error) {
+                    vscode.window.showErrorMessage(localize('ftp.provider.uploadWorkspaceFailed', error.message)); // 更新本地化前缀
+                } finally {
+                    this.isBusy = false;
+                }
+            });
+            return;
+        }
+    
         const isSelectFolders = action === localize('ftp.provider.uploadFolder');
-
+    
         const selectedFiles = await vscode.window.showOpenDialog({
             canSelectFolders: isSelectFolders,
             canSelectFiles: !isSelectFolders,
@@ -359,21 +393,17 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
             openLabel: action,
             defaultUri: workspaceFolder ? vscode.Uri.file(workspaceFolder) : undefined
         });
-
+    
         if (!selectedFiles || selectedFiles.length === 0) return;
-        this.isBusy = true;
-
-        const workspaceFolderName = workspaceFolder ? path.basename(workspaceFolder) : '';
-        const defaultRemotePath = this.currentRootPath ? path.posix.join(this.currentRootPath, workspaceFolderName) : '/';
-
+    
         const remotePath = await vscode.window.showInputBox({
             prompt: localize('ftp.provider.enterDestinationPath'), // 更新本地化前缀
             value: defaultRemotePath,
             placeHolder: localize('ftp.provider.examplePath') // 更新本地化前缀
         });
-
+    
         if (!remotePath) return;
-
+    
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: localize('ftp.provider.uploadingTo', remotePath), // 更新本地化前缀
@@ -385,30 +415,41 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
                     const relativePath = path.relative(workspaceFolder, localPath);
                     const remoteTargetPath = path.posix.join(remotePath, relativePath);
                     const isDirectory = (await vscode.workspace.fs.stat(file)).type === vscode.FileType.Directory;
-
+    
                     if (isDirectory) {
                         await this.uploadDirectoryWithStructure(localPath, remotePath, progress);
                     } else {
-                        const fileName = path.basename(localPath); 
-                        const remoteTargetPath = path.posix.join(remotePath, fileName); 
+                        const fileName = path.basename(localPath);
+                        const remoteTargetPath = path.posix.join(remotePath, fileName);
                         const remoteFileDir = path.posix.dirname(remoteTargetPath);
-                        await this.ftpClient.createDirectory(remoteFileDir); 
+                        await this.ftpClient.createDirectory(remoteFileDir);
                         await this.ftpClient.uploadFile(localPath, remoteTargetPath, progress);
                     }
                     vscode.window.showInformationMessage(localize('ftp.provider.uploadSuccess', localPath, remoteTargetPath)); // 更新本地化前缀
                 }
                 await this.refreshFTPItems(this.currentPath);
             } catch (error) {
-                vscode.window.showErrorMessage(localize('ftp.provider.uploadFailed',error.message)); // 更新本地化前缀
+                vscode.window.showErrorMessage(localize('ftp.provider.uploadFailed', error.message)); // 更新本地化前缀
             } finally {
                 this.isBusy = false;
             }
         });
     }
+    
+    
+
 
     private async uploadDirectoryWithStructure(localPath: string, remotePath: string, progress: vscode.Progress<{ increment: number }>) {
         const fs = require('fs').promises;
         const path = require('path');
+
+        // 获取忽略规则
+        const config = vscode.workspace.getConfiguration('ftpClient');
+        const ignorePatternStr = config.get<string>('7.ignore', '.*\\.(zip|rar)$|\\.vscode$|node_modules');
+        const ignorePattern = new RegExp(ignorePatternStr);
+
+        // 检查文件是否匹配忽略规则
+        const isIgnored = (filePath: string) => ignorePattern.test(filePath);
 
         await this.ftpClient.createDirectory(remotePath);
 
@@ -417,7 +458,11 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
         for (const item of items) {
             const itemLocalPath = path.join(localPath, item.name);
             const itemRemotePath = path.posix.join(remotePath, item.name);
-
+            // 检查是否需要忽略
+            if (isIgnored(itemLocalPath)) {
+                console.log("忽略的文件",itemLocalPath);
+                continue;
+            }
             if (item.isDirectory()) {
                 await this.uploadDirectoryWithStructure(itemLocalPath, itemRemotePath, progress);
             } else {

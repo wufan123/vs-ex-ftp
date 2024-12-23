@@ -2,7 +2,7 @@
     "name": "vs-ex-ftp",
     "displayName": "ftp explorer",
     "description": "ftp explorer",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "publisher": "waslong",
     "license": "MIT",
     "repository": "https://github.com/wufan123/vs-ex-ftp",
@@ -15,6 +15,15 @@
     ],
     "main": "./dist/extension.js",
     "contributes": {
+        "languages": [{
+            "id": "zh-cn",
+            "aliases": ["Chinese", "中文"],
+            "extensions": [".cn"],
+            "localizedLanguageId": "zh-cn"
+        }],
+        "readme": {
+            "zh-cn": "./README.zh-cn.md"
+        },
         "configuration": {
             "type": "object",
             "title": "%ftpClientSettings%",

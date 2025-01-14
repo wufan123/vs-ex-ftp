@@ -1,115 +1,88 @@
-# FTP Explorer VS Code Extension
+# FTP Client 插件中文使用说明
 
-## Introduction
-The FTP Explorer extension for Visual Studio Code allows developers to seamlessly interact with remote FTP servers. You can browse remote directories, upload and download files and folders, delete files, and refresh FTP items directly within the VS Code interface. This extension streamlines FTP operations for developers who need to manage remote servers while coding locally.
+## 初始配置参数
+在开始使用插件前，请确保配置好以下参数：
 
----
+### 基本配置
+通过 VS Code 的设置页面，搜索 `ftpClient` 即可找到配置项。
 
-## Initial Configuration
-Before using the extension, you need to configure it with the necessary FTP details. Below is the list of configuration parameters:
+- **`ftpClient.host`**：FTP 服务器地址。
+- **`ftpClient.user`**：FTP 用户名。
+- **`ftpClient.password`**：FTP 密码。
+- **`ftpClient.secure`**：是否使用安全连接（默认值：`false`）。
+- **`ftpClient.path`**：FTP 根目录路径（默认值：`/`）。
+- **`ftpClient.baseUrl`**：FTP 服务器的基本 URL，用于文件预览。
+- **`ftpClient.ignore`**：上传时忽略文件的正则表达式（默认值：`\.zip$|\.rar$|\.vscode|node_modules`）。
 
-### Configuration Parameters
+## 功能介绍与使用
 
-1. **ftpClient.host** (string):
-   - Description: The hostname or IP address of the FTP server.
-   - Example: `"ftp.example.com"`
+### 1. 浏览 FTP 目录
+通过侧边栏的 **FTP Explorer**，可以浏览 FTP 服务器中的目录结构。
 
-2. **ftpClient.user** (string):
-   - Description: The username for FTP authentication.
-   - Example: `"username"`
-
-3. **ftpClient.password** (string):
-   - Description: The password for FTP authentication.
-   - Example: `"password"`
-
-4. **ftpClient.secure** (boolean):
-   - Description: Use secure FTP (FTPS).
-   - Default: `false`
-
-5. **ftpClient.path** (string):
-   - Description: The default path to connect to on the remote FTP server.
-   - Default: `"/"`
-
-6. **ftpClient.baseUrl** (string):
-   - Description: The base URL for previewing `.html` files in a browser.
-   - Default: `"http://192.168.63.174"`
-
-7. **ftpClient.ignore** (string):
-   - Description: A regular expression to ignore files or directories during uploads.
-   - Default: `"\.zip|\.rar|\.vscode|node_modules"`
+#### 操作步骤：
+1. 在侧边栏中找到 `FTP Explorer`。
+2. 点击根目录展开目录结构。
+3. 双击文件或文件夹以进行下一步操作。
 
 ---
 
-## Features and Usage
+### 2. 上传文件和文件夹
+支持选择单个文件、文件夹或直接上传当前工作目录。
 
-### 1. **Browse FTP Directory**
-   - **Description**: View the remote directory structure directly in the VS Code sidebar.
-   - **Steps**:
-     1. Open the "FTP Explorer" view in the VS Code sidebar.
-     2. The remote directory structure will automatically load based on your configuration.
-     3. Click on directories to navigate.
+#### 上传单个文件或文件夹：
+1. 右键项目目录，选择 `上传文件` 或 `上传文件夹`。
+2. 按提示选择本地文件或文件夹。
+3. 等待上传完成后，收到成功通知。
 
-### 2. **Upload Files and Folders**
-   - **Description**: Upload local files and directories to the remote server.
-   - **Steps**:
-     1. Right-click in the "FTP Explorer" view or use the command palette (`Ctrl+Shift+P`) to select `FTP Explorer: Upload Files` or `FTP Explorer: Upload Folder`.
-     2. Select the local files or folders you wish to upload.
-     3. Confirm the destination path or use the default provided.
-     4. Progress will be displayed in the notification area.
-
-### 3. **Download Files and Folders**
-   - **Description**: Download remote files or directories to your local workspace.
-   - **Steps**:
-     1. Right-click a file or folder in the "FTP Explorer" view and select `Download`.
-     2. Choose a local destination folder for the download.
-     3. The file or folder will be downloaded, and progress will be shown in the notification area.
-
-### 4. **Delete Files and Directories**
-   - **Description**: Remove files or directories from the remote server.
-   - **Steps**:
-     1. Right-click a file or folder in the "FTP Explorer" view.
-     2. Select `Delete`.
-     3. Confirm the deletion action.
-     4. The file or directory will be removed from the remote server.
-
-### 5. **Refresh FTP Items**
-   - **Description**: Refresh the remote directory structure to reflect the latest state of the server.
-   - **Steps**:
-     1. Right-click in the "FTP Explorer" view.
-     2. Select `Refresh`.
-     3. The view will reload and display the updated directory structure.
-
-### 6. **Set Current Root Directory**
-   - **Description**: Change the root directory to a specific folder on the remote server.
-   - **Steps**:
-     1. Right-click a directory in the "FTP Explorer" view.
-     2. Select `Set as Root Directory`.
-     3. The selected directory will become the new root, and the view will update accordingly.
+#### 上传当前工作目录：
+1. 打开工作区。
+2. 在侧边栏的 `FTP Explorer` 中，点击 `上传 当前工作目录`。
+3. 远程路径默认为 `FTP 根目录 + 当前工作目录名称`。
 
 ---
 
-## Additional Commands
+### 3. 下载文件和文件夹
+从 FTP 服务器下载文件或文件夹到本地。
 
-- **Preview HTML in Browser**:
-  - Right-click on a `.html` file in the "FTP Explorer" view and select `Preview in Browser`.
-  - The file will open in your default browser using the configured `ftpClient.baseUrl`.
-
----
-
-## FAQ
-
-1. **Why can’t I connect to my FTP server?**
-   - Check your `ftpClient.host`, `ftpClient.user`, and `ftpClient.password` configurations.
-   - Ensure the server is reachable and your credentials are correct.
-
-2. **How do I ignore specific files during upload?**
-   - Use the `ftpClient.ignore` configuration to define a regular expression for files and directories to exclude from uploads.
-
-3. **How do I update my FTP settings?**
-   - Open the VS Code settings (`Ctrl+,`), search for `ftpClient`, and update the required fields.
+#### 操作步骤：
+1. 在 `FTP Explorer` 中，右键目标文件或文件夹。
+2. 选择 `下载`。
+3. 按提示选择保存位置。
 
 ---
 
-## License
-This extension is licensed under the [MIT License](LICENSE.md).
+### 4. 删除文件和目录
+支持从 FTP 服务器中删除文件或目录。
+
+#### 操作步骤：
+1. 在 `FTP Explorer` 中，右键目标文件或目录。
+2. 选择 `删除`。
+3. 确认后即删除。
+
+---
+
+### 5. 刷新 FTP 项目
+用于重新加载当前目录结构。
+
+#### 操作步骤：
+1. 在 `FTP Explorer` 顶部，点击 `刷新` 按钮。
+2. 更新后的目录结构将立即显示。
+
+---
+
+### 6. 设置当前根目录
+更改 FTP 浏览器中的根目录。
+
+#### 操作步骤：
+1. 在 `FTP Explorer` 中，右键目标目录。
+2. 选择 `设置为根目录`。
+3. 重新加载后，根目录生效。
+
+---
+
+## 注意事项
+- 请确保 FTP 服务器地址和凭据正确无误。
+- 上传和下载时，请关注忽略规则是否符合预期。
+
+感谢使用 FTP Client 插件！如需帮助，请提交 issue 或参考插件市场中的支持文档。
 

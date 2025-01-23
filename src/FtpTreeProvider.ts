@@ -43,7 +43,12 @@ class FTPClientWrapper {
       throw new Error(errMessage);
     }
     try {
-      await this.client.access({ host, user, password, secure });
+      await this.client.access({
+        host,
+        user,
+        password,
+        secure,
+      });
       vscode.commands.executeCommand(
         "setContext",
         "ftpExplorer.connected",
@@ -319,9 +324,10 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     this.currentRootPath = path;
     await this.loadFTPItems(this.currentPath);
     this.refresh();
-    vscode.window.showInformationMessage(
-      localize("ftp.provider.refreshSuccess")
-    ); // 更新本地化前缀
+    const currentTime = new Date().toLocaleTimeString(); // 获取当前时间到秒
+    vscode.window.setStatusBarMessage(
+      localize("ftp.provider.refreshSuccess") + ` (${currentTime})`
+    );
     vscode.commands.executeCommand(
       "setContext",
       "ftpExplorer.refreshEnabled",
@@ -506,6 +512,41 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
       );
       return;
     }
+    const config = vscode.workspace.getConfiguration("ftpClient.8");
+    const defaultUriConfig = config.get<string>("defaultUri"); // 从配置中读取 defaultUri
+    let defaultUri: vscode.Uri | undefined;
+
+    if (defaultUriConfig) {
+      try {
+        // 尝试解析配置路径并检查其有效性
+        const parsedUri = vscode.Uri.file(defaultUriConfig);
+        const fs = require("fs");
+        if (fs.existsSync(parsedUri.fsPath)) {
+          defaultUri = parsedUri; // 如果路径存在且有效，则使用该路径
+        } else {
+          // 提示路径无效
+          vscode.window.showErrorMessage(
+            localize("ftp.provider.invalidDefaultUri", defaultUriConfig)
+          );
+          defaultUri = workspaceFolder
+            ? vscode.Uri.file(workspaceFolder)
+            : undefined;
+        }
+      } catch (error) {
+        // 提示路径解析失败
+        vscode.window.showErrorMessage(
+          localize("ftp.provider.invalidDefaultUriFormat", defaultUriConfig)
+        );
+        defaultUri = workspaceFolder
+          ? vscode.Uri.file(workspaceFolder)
+          : undefined;
+      }
+    } else {
+      // 如果没有配置路径，则使用 workspaceFolder
+      defaultUri = workspaceFolder
+        ? vscode.Uri.file(workspaceFolder)
+        : undefined;
+    }
 
     const isSelectFolders = action === localize("ftp.provider.uploadFolder");
 
@@ -514,18 +555,24 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
       canSelectFiles: !isSelectFolders,
       canSelectMany: true,
       openLabel: action,
-      defaultUri: workspaceFolder
-        ? vscode.Uri.file(workspaceFolder)
-        : undefined,
+      defaultUri: defaultUri, // 使用计算好的 defaultUri
     });
 
     if (!selectedFiles || selectedFiles.length === 0) {
       return;
     }
 
-    const remotePath = await vscode.window.showInputBox({
+    let remotePath = this.currentRootPath;
+    if (isSelectFolders && selectedFiles.length === 1) {
+      const selectedFolderName = path.basename(selectedFiles[0].fsPath); // 获取当前文件夹名
+      remotePath = path.posix.join(
+        this.currentRootPath || "",
+        selectedFolderName
+      );
+    }
+    remotePath = await vscode.window.showInputBox({
       prompt: localize("ftp.provider.enterDestinationPath"), // 更新本地化前缀
-      value: defaultRemotePath,
+      value: remotePath,
       placeHolder: localize("ftp.provider.examplePath"), // 更新本地化前缀
     });
 
@@ -649,7 +696,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
       let showPreLevel = this.currentPath === "/" ? false : true;
       return this.loadFTPItems(this.currentPath, showPreLevel); // 根目录
     } else if (element.isDirectory) {
-      return this.loadFTPItems(element.path); // 获取子目录 
+      return this.loadFTPItems(element.path); // 获取子目录
     }
     return [];
   }

@@ -2,7 +2,7 @@
   "name": "vs-ex-ftp",
   "displayName": "ftp explorer",
   "description": "ftp explorer",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "publisher": "waslong",
   "license": "MIT",
   "repository": "https://github.com/wufan123/vs-ex-ftp",
@@ -65,6 +65,11 @@
           "type": "string",
           "default": ".*\\.(zip|rar)$|\\.vscode$|node_modules",
           "description": "%ftpClient.ignore%"
+        },
+        "ftpClient.8.defaultUri": {
+          "type": "string",
+          "default": "", 
+          "description": "%ftpClient.defaultUri%"
         }
       }
     },

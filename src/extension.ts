@@ -59,10 +59,15 @@ function activate(context: vscode.ExtensionContext) {
     const fileHandler = new FileHandler();
     context.subscriptions.push(vscode.commands.registerCommand('ftpExplorer.openFile', async (filePath: string) => {
         const tempFilePath = await ftpTreeProvider.ftpClient.downloadToTempFile(filePath);
-        await fileHandler.openFile(tempFilePath);
+        try{
+            await fileHandler.openFile(tempFilePath); 
+        }catch(e){
+
+        }
+ 
     }));
 
-    context.subscriptions.push(
+    context.subscriptions.push( 
         vscode.commands.registerCommand('ftpExplorer.previewHtml', async (item: vscode.Uri) => {
             const browserOpener = new BrowserOpener();
             await browserOpener.openUrlInBrowser(item);

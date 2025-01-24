@@ -17,7 +17,7 @@ export class FileHandler {
         await vscode.window.withProgress(
             {
                 location: vscode.ProgressLocation.Window,
-                title: localize('openFile.progress'),
+                title: localize('openFile.progress'), 
                 cancellable: false
             },
             async () => {

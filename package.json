@@ -113,6 +113,11 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "ftpExplorer.backParentDirectory",
+        "title": "%ftpExplorer.backParentDirectory%",
+        "category": "%ftpExplorerCategory%"
+      },
+      {
         "command": "ftpExplorer.downloadToDirectory",
         "title": "%ftpExplorer.downloadToDirectory%",
         "category": "%ftpExplorerCategory%"
@@ -120,11 +125,6 @@
       {
         "command": "ftpExplorer.setRootDirectory",
         "title": "%ftpExplorer.setRootDirectory%",
-        "category": "%ftpExplorerCategory%"
-      },
-      {
-        "command": "ftpExplorer.backParentDirectory",
-        "title": "%ftpExplorer.backParentDirectory%",
         "category": "%ftpExplorerCategory%"
       },
       {

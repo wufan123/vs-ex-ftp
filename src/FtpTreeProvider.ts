@@ -7,10 +7,13 @@ const { localize } = require("vscode-nls-i18n");
 class FTPClientWrapper {
   private client: ftp.Client;
   private isConnecting: boolean = false;
-
+  private host: string;
   constructor() {
     this.client = new ftp.Client();
     this.client.ftp.verbose = true;
+  }
+  public getHost() {
+    return this.host;
   }
 
   async connect(): Promise<void> {
@@ -42,6 +45,7 @@ class FTPClientWrapper {
       );
       throw new Error(errMessage);
     }
+    this.host = host;
     try {
       await this.client.access({
         host,
@@ -243,7 +247,7 @@ class FTPClientWrapper {
         throw error;
       }
     } finally {
-      this.client.trackProgress(); // 停止进度追踪 
+      this.client.trackProgress(); // 停止进度追踪
     }
   }
 
@@ -502,7 +506,8 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
 
   private async loadFTPItems(
     path: string = "/",
-    showPreLevel: boolean = false
+    showToParent: boolean = false,
+    showInfo: boolean = false
   ): Promise<FtpItem[]> {
     if (typeof path !== "string") {
       vscode.window.showErrorMessage(
@@ -510,11 +515,20 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
       ); // 更新本地化前缀
       return [];
     }
-
     try {
       const items: FtpItem[] = [];
       const files = await this.ftpClient.list(path);
-      if (showPreLevel) {
+      if (showInfo) {
+        items.push(
+          new FtpItem(
+            `${this.ftpClient.getHost()} - ${path}`,
+            "/",
+            this.getPathParentPath(path),
+            false
+          )
+        );
+      }
+      if (showToParent) {
         items.push(
           new FtpItem(
             localize("ftp.provider.toParentDirectory"), // 更新本地化前缀
@@ -586,6 +600,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
           } else {
             await this.ftpClient.removeFile(item.path);
           }
+          progress.report({increment:100});
           vscode.window.showInformationMessage(
             localize("ftp.provider.deleteSuccess", item.label)
           ); // 更新本地化前缀
@@ -843,8 +858,8 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
 
   async getChildren(element?: FtpItem): Promise<FtpItem[]> {
     if (!element) {
-      let showPreLevel = this.currentPath === "/" ? false : true;
-      return this.loadFTPItems(this.currentPath, showPreLevel); // 根目录
+      let showToParent = this.currentPath === "/" ? false : true;
+      return this.loadFTPItems(this.currentPath, showToParent, true); // 根目录
     } else if (element.isDirectory) {
       return this.loadFTPItems(element.path); // 获取子目录
     }
@@ -865,22 +880,35 @@ export class FtpItem extends vscode.TreeItem {
         ? vscode.TreeItemCollapsibleState.Collapsed
         : vscode.TreeItemCollapsibleState.None
     );
-    if (path === "../" && parentPath) {
+    if (path === "/") {
       this.command = {
-        command: "ftpExplorer.backParentDirectory",
-        title: "Back Parent Directory",
+        command: "ftpExplorer.setRootDirectory", // 添加一个统一的命令
+        title: localize("ftpExplorer.setRootDirectory"), 
         arguments: [this],
       };
+      this.contextValue = "special";
+      return;
+    } else if (path === "../" && parentPath) { 
+      this.command = {
+        command: "ftpExplorer.backParentDirectory", 
+        title: localize("ftpExplorer.backParentDirectory"), 
+        arguments: [this],
+      };
+      this.contextValue = "special";
+      return;
     } else {
       this.command = isDirectory
-        ? undefined
+        ? {
+          command: "ftpExplorer.setRootDirectory", // 添加一个统一的命令
+          title: localize("ftpExplorer.setRootDirectory"), 
+          arguments: [this],
+        }
         : {
             command: "ftpExplorer.openFile",
-            title: "Open File",
+            title: localize("ftpExplorer.openFile"),
             arguments: [this.path],
           };
+      this.contextValue = isDirectory ? "folder" : "file";
     }
-
-    this.contextValue = isDirectory ? "folder" : "file";
   }
 }

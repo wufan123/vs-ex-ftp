@@ -504,6 +504,59 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     }
   }
 
+  private getFileModifiedDateStr(rawDate: string): string {
+    // 解析 rawModifiedAt 的自定义函数
+    const parseRawModifiedAt = (rawDate: string): Date | null => {
+      const regex = /^(\d{2})-(\d{2})-(\d{2}) (\d{2}):(\d{2})(AM|PM)$/;
+      const match = rawDate.match(regex);
+
+      if (!match) return null;
+
+      const [, month, day, year, hour, minute, period] = match;
+
+      // 年份解析，确保是完整的四位年份
+      const fullYear =
+        parseInt(year, 10) + (parseInt(year, 10) < 50 ? 2000 : 1900);
+
+      // 小时转换为 24 小时制
+      let hours = parseInt(hour, 10);
+      if (period === "PM" && hours < 12) hours += 12;
+      if (period === "AM" && hours === 12) hours = 0;
+
+      return new Date(
+        fullYear,
+        parseInt(month, 10) - 1,
+        parseInt(day, 10),
+        hours,
+        parseInt(minute, 10)
+      );
+    };
+
+    const formatDate = (date: Date): string => {
+      const pad = (num: number) => num.toString().padStart(2, "0");
+      return ` \u21BB${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+        date.getSeconds()
+      )} `;
+    };
+
+    const isToday = (date: Date): boolean => {
+      const today = new Date();
+      return (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+      );
+    };
+
+    const parsedDate = rawDate ? parseRawModifiedAt(rawDate) : null;
+    // 检查日期是否有效且为今天
+    if (parsedDate && isToday(parsedDate)) {
+      return formatDate(parsedDate);
+    }
+
+    return ""; // 如果日期无效或不是今天，返回空字符串
+  }
+
   private async loadFTPItems(
     path: string = "/",
     showToParent: boolean = false,
@@ -539,15 +592,15 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
         );
       }
       items.push(
-        ...files.map(
-          (file) =>
-            new FtpItem(
-              file.name,
-              path === "/" ? `/${file.name}` : `${path}/${file.name}`,
-              path,
-              file.isDirectory
-            )
-        )
+        ...files.map((file) => {
+          return new FtpItem(
+            file.name,
+            path === "/" ? `/${file.name}` : `${path}/${file.name}`,
+            path,
+            file.isDirectory,
+            this.getFileModifiedDateStr(file.rawModifiedAt)
+          );
+        })
       );
 
       return items;
@@ -600,7 +653,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
           } else {
             await this.ftpClient.removeFile(item.path);
           }
-          progress.report({increment:100});
+          progress.report({ increment: 100 });
           vscode.window.showInformationMessage(
             localize("ftp.provider.deleteSuccess", item.label)
           ); // 更新本地化前缀
@@ -686,6 +739,12 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     const isUploadingWorkspace = action === uploadCurrentWorkspaceAction;
     let defaultUri: vscode.Uri | undefined;
     defaultUri = this.getDefaultUri(workspaceFolder);
+
+    const config = vscode.workspace.getConfiguration("ftpClient.9");
+    const confirmTheUploadDirectory = config.get<boolean>(
+      "confirmTheUploadDirectory"
+    );
+
     const selectedFiles = isUploadingWorkspace
       ? [{ fsPath: workspaceFolder }]
       : await vscode.window.showOpenDialog({
@@ -709,14 +768,13 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
       );
     }
 
-    remotePath = isUploadingWorkspace
-      ? path.posix.join(this.currentRootPath || "/", workspaceFolderName)
-      : await vscode.window.showInputBox({
-          prompt: localize("ftp.provider.enterDestinationPath"),
-          value: remotePath,
-          placeHolder: localize("ftp.provider.examplePath"),
-        });
-
+    if (confirmTheUploadDirectory) {
+      remotePath = await vscode.window.showInputBox({
+        prompt: localize("ftp.provider.enterDestinationPath"),
+        value: remotePath,
+        placeHolder: localize("ftp.provider.examplePath"),
+      });
+    }
     if (!remotePath) {
       return;
     }
@@ -854,6 +912,8 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
   async backParentDirectory(item: FtpItem) {
     const parentPath = item.parentPath;
     await this.refreshFTPItems(parentPath);
+    item.path = parentPath;
+    this.setRootDirectory(item);
   }
 
   async getChildren(element?: FtpItem): Promise<FtpItem[]> {
@@ -869,10 +929,11 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
 
 export class FtpItem extends vscode.TreeItem {
   constructor(
-    public readonly label: string,
-    public readonly path: string,
-    public readonly parentPath: string,
-    public readonly isDirectory: boolean
+    public label: string,
+    public path: string,
+    public parentPath: string,
+    public isDirectory: boolean,
+    public modifiedDateStr?: string
   ) {
     super(
       label,
@@ -880,18 +941,19 @@ export class FtpItem extends vscode.TreeItem {
         ? vscode.TreeItemCollapsibleState.Collapsed
         : vscode.TreeItemCollapsibleState.None
     );
+    this.description = modifiedDateStr ? modifiedDateStr : "";
     if (path === "/") {
       this.command = {
         command: "ftpExplorer.setRootDirectory", // 添加一个统一的命令
-        title: localize("ftpExplorer.setRootDirectory"), 
+        title: localize("ftpExplorer.setRootDirectory"),
         arguments: [this],
       };
       this.contextValue = "special";
       return;
-    } else if (path === "../" && parentPath) { 
+    } else if (path === "../" && parentPath) {
       this.command = {
-        command: "ftpExplorer.backParentDirectory", 
-        title: localize("ftpExplorer.backParentDirectory"), 
+        command: "ftpExplorer.backParentDirectory",
+        title: localize("ftpExplorer.backParentDirectory"),
         arguments: [this],
       };
       this.contextValue = "special";
@@ -899,10 +961,10 @@ export class FtpItem extends vscode.TreeItem {
     } else {
       this.command = isDirectory
         ? {
-          command: "ftpExplorer.setRootDirectory", // 添加一个统一的命令
-          title: localize("ftpExplorer.setRootDirectory"), 
-          arguments: [this],
-        }
+            command: "ftpExplorer.setRootDirectory", // 添加一个统一的命令
+            title: localize("ftpExplorer.setRootDirectory"),
+            arguments: [this],
+          }
         : {
             command: "ftpExplorer.openFile",
             title: localize("ftpExplorer.openFile"),

@@ -8,6 +8,7 @@
   "ftpClient.baseUrl.description": "用于在浏览器中预览文件的基础 URL。",
   "ftpClient.ignore": "上传时用于忽略文件或目录的正则表达式。",
   "ftpClient.defaultUri": "选择文件夹时打开的默认路径，如果没有配置则默认打开当前的工作目录",
+  "ftpClient.confirmTheUploadDirectory": "选择文件夹或文件上传后是否需要再次确认上传目录,如果勾选该项,每次选择文件夹或文件上传后出现输入框显示上传路径,可修改路径,确认后按enter上传",
   "title": "FTP",
   "viewsWelcome.ftpExplorer.contents": "初始化 FTP 浏览器...\n [打开设置](command:ftpExplorer.openSettings)\n [连接 FTP](command:ftpExplorer.connectFTP)",
   "ftpExplorerName": "文件浏览器",

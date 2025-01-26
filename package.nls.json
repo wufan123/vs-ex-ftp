@@ -8,6 +8,7 @@
   "ftpClient.baseUrl.description": "The base URL for previewing files in the browser.",
   "ftpClient.ignore": "A regular expression to ignore files or directories when uploading.",
   "ftpClient.defaultUri": "The default path to open when selecting a folder. If not configured, the current workspace directory will be used by default.",
+"ftpClient.confirmTheUploadDirectory": "Whether to confirm the upload directory again after selecting a folder or file for upload. If this option is checked, an input box will appear showing the upload path each time a folder or file is selected for upload. You can modify the path and press Enter to confirm and upload.",
   "title": "title",
   "viewsWelcome.ftpExplorer.contents": "Initialize FTP Explorer...\n [Open Settings](command:ftpExplorer.openSettings)\n [Connect FTP](command:ftpExplorer.connectFTP)",
   "ftpExplorerName": "file Explorer",

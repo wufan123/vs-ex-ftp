@@ -5,7 +5,7 @@
   "ftpClient.password": "The FTP server password.*",
   "ftpClient.secure": "Use secure FTP. (If error 534 occurs during connection, the server does not support secure mode, so do not select this option)",
   "ftpClient.path": "The FTP server path.",
-  "ftpClient.baseUrl.description": "The base URL for previewing files in the browser.",
+  "ftpClient.baseUrl.description": "Base URL. (Used to preview file URLs in the browser, e.g., http://test.com/)",
   "ftpClient.ignore": "Ignore files. (Regular expressions used to ignore files or directories during upload)",
   "ftpClient.defaultUri": "Default path. (The default path opened when selecting a folder. If not configured, the current workspace directory is used by default)",
   "ftpClient.confirmTheUploadDirectory": "Upload path confirmation. (If this option is checked, an input box will appear showing the upload path after selecting a folder or file for upload. The path can be modified, and pressing Enter will confirm the upload)",

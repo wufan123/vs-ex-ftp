@@ -5,7 +5,7 @@
   "ftpClient.password": "FTP 服务器密码。*",
   "ftpClient.secure": "使用安全 FTP。(如果连接时报错534，则服务器不支持安全模式，不要勾选该项)",
   "ftpClient.path": "FTP 服务器路径。",
-  "ftpClient.baseUrl.description": "用于在浏览器中预览文件的基础 URL。",
+  "ftpClient.baseUrl.description": "基础 URL。(用于在浏览器中预览文件url地址,例如http://test.com/)",
   "ftpClient.ignore": "忽略文件。(上传时用于忽略文件或目录的正则表达式)",
   "ftpClient.defaultUri": "默认路径。(选择文件夹时打开的默认路径，如果没有配置则默认打开当前的工作目录)",
   "ftpClient.confirmTheUploadDirectory": "上传路径确认。(如果勾选该项，每次选择文件夹或文件上传后出现输入框显示上传路径，可修改路径，确认后按enter上传)",

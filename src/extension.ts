@@ -97,7 +97,7 @@ function activate(context: vscode.ExtensionContext) {
       }
     )
   );
-
+  //注册预览命令
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "ftpExplorer.previewHtml",

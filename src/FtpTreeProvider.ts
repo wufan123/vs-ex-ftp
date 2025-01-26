@@ -3,6 +3,7 @@ import * as ftp from "basic-ftp";
 import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
+import { BrowserOpener } from "./BrowserOpener";
 const { localize } = require("vscode-nls-i18n");
 class FTPClientWrapper {
   private client: ftp.Client;
@@ -837,6 +838,14 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
               )
             );
             await this.refreshFTPItems(this.currentPath);
+            const config = vscode.workspace.getConfiguration("ftpClient.m10"); 
+            const previewAfterUploading = config.get<boolean>(
+              "previewAfterUploading"
+            );
+            if (previewAfterUploading) {
+              const browserOpener = new BrowserOpener();
+              browserOpener.openUrlInBrowser({ path: remotePath });
+            }
           }
         } catch (error) {
           if (!token.isCancellationRequested) {

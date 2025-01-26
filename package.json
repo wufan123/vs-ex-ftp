@@ -68,13 +68,18 @@
         },
         "ftpClient.8.defaultUri": {
           "type": "string",
-          "default": "", 
+          "default": "",
           "description": "%ftpClient.defaultUri%"
         },
         "ftpClient.9.confirmTheUploadDirectory": {
           "type": "boolean",
-          "default": false, 
+          "default": false,
           "description": "%ftpClient.confirmTheUploadDirectory%"
+        },
+        "ftpClient.m10.previewAfterUploading": {
+          "type": "boolean",
+          "default": false,
+          "description": "%ftpClient.previewAfterUploading%"
         }
       }
     },
@@ -92,7 +97,7 @@
         {
           "id": "ftp-explorer",
           "name": "%ftpExplorerName%",
-          "contextualTitle": "%title%"
+          "contextualTitle": "%title%" 
         }
       ]
     },
@@ -105,7 +110,8 @@
     "commands": [
       {
         "command": "ftpExplorer.openSettings",
-        "title": "%ftpExplorer.openSettings%"
+        "title": "%ftpExplorer.openSettings%",
+        "icon": "$(settings)"
       },
       {
         "command": "ftpExplorer.connectFTP",
@@ -168,7 +174,7 @@
         },
         {
           "command": "ftpExplorer.previewHtml",
-          "when": "view == ftp-explorer&&viewItem == file",
+          "when": "view == ftp-explorer",
           "group": "navigation"
         }
       ],
@@ -180,6 +186,11 @@
         },
         {
           "command": "ftpExplorer.uploadItem",
+          "when": "view == ftp-explorer && ftpExplorer.connected",
+          "group": "navigation"
+        },
+        {
+          "command": "ftpExplorer.openSettings",
           "when": "view == ftp-explorer && ftpExplorer.connected",
           "group": "navigation"
         }

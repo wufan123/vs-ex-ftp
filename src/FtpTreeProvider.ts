@@ -749,19 +749,25 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     const selectedFiles = isUploadingWorkspace
       ? [{ fsPath: workspaceFolder }]
       : await vscode.window.showOpenDialog({
-          canSelectFolders: action === localize("ftp.provider.uploadFolder"),
-          canSelectFiles: action === localize("ftp.provider.uploadFile"),
-          canSelectMany: true,
-          openLabel: action,
-          defaultUri: defaultUri,
-        });
+        canSelectFolders: action === localize("ftp.provider.uploadFolder"),
+        canSelectFiles: action === localize("ftp.provider.uploadFile"),
+        canSelectMany: true,
+        openLabel: action,
+        defaultUri: defaultUri,
+      });
 
     if (!selectedFiles || selectedFiles.length === 0) {
       return;
     }
 
     let remotePath = this.currentRootPath;
-    if (selectedFiles.length === 1 && !isUploadingWorkspace) {
+    if (isUploadingWorkspace) {
+      const workspaceFolderName = path.basename(workspaceFolder);
+      remotePath = path.posix.join(
+        this.currentRootPath || "",
+        workspaceFolderName
+      );
+    } else if (selectedFiles.length === 1) {
       const selectedFolderName = path.basename(selectedFiles[0].fsPath);
       remotePath = path.posix.join(
         this.currentRootPath || "",
@@ -838,7 +844,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
               )
             );
             await this.refreshFTPItems(this.currentPath);
-            const config = vscode.workspace.getConfiguration("ftpClient.m10"); 
+            const config = vscode.workspace.getConfiguration("ftpClient.m10");
             const previewAfterUploading = config.get<boolean>(
               "previewAfterUploading"
             );
@@ -970,15 +976,15 @@ export class FtpItem extends vscode.TreeItem {
     } else {
       this.command = isDirectory
         ? {
-            command: "ftpExplorer.setRootDirectory", // 添加一个统一的命令
-            title: localize("ftpExplorer.setRootDirectory"),
-            arguments: [this],
-          }
+          command: "ftpExplorer.setRootDirectory", // 添加一个统一的命令
+          title: localize("ftpExplorer.setRootDirectory"),
+          arguments: [this],
+        }
         : {
-            command: "ftpExplorer.openFile",
-            title: localize("ftpExplorer.openFile"),
-            arguments: [this.path],
-          };
+          command: "ftpExplorer.openFile",
+          title: localize("ftpExplorer.openFile"),
+          arguments: [this.path],
+        };
       this.contextValue = isDirectory ? "folder" : "file";
     }
   }

@@ -480,6 +480,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
   }
 
   public async setRootDirectory(item: FtpItem) {
+    console.log("Selected directory222:", item.path);
     this.currentRootPath = item.path;
     const config = vscode.workspace.getConfiguration("ftpClient");
     await config.update(
@@ -1054,16 +1055,39 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
         try {
           await this.ftpClient.createDirectory(newFolderPath);
           vscode.window.showInformationMessage(
-            localize("ftp.provider.createFolderSuccess", `Folder created: ${folderName}`)
+            localize("ftp.provider.createFolderSuccess", folderName)
           );
           await this.refreshFTPItems(this.getCurrentRootPath());
         } catch (error) {
           vscode.window.showErrorMessage(
-            localize("ftp.provider.createFolderFailed", `Failed to create folder: ${error.message}`)
+            localize("ftp.provider.createFolderFailed", error.message)
           );
         }
       }
     );
+  }
+
+  public async searchItems(keyword: string): Promise<FtpItem[]> {
+    if (!keyword || keyword.trim() === "") {
+      vscode.window.showErrorMessage(localize("ftp.provider.invalidSearchKeyword"));
+      return [];
+    }
+  
+    try {
+      const allItems = await this.loadFTPItems(this.currentPath);
+      const filteredItems = allItems.filter(item =>
+        item.label.toLowerCase().includes(keyword.toLowerCase())
+      );
+  
+      if (filteredItems.length === 0) {
+        vscode.window.showInformationMessage(localize("ftp.provider.noSearchResults", keyword));
+      }
+  
+      return filteredItems;
+    } catch (error) {
+      vscode.window.showErrorMessage(localize("ftp.provider.searchFailed", error.message));
+      return [];
+    }
   }
 }
 

@@ -150,6 +150,40 @@ function activate(context: vscode.ExtensionContext) {
       await ftpTreeProvider.createFolder();
     })
   );
+
+  // 在 activate 函数中注册搜索命令
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ftpExplorer.searchItems", async () => {
+      const keyword = await vscode.window.showInputBox({
+        prompt: localize("ftp.provider.enterSearchKeyword"),
+        placeHolder: localize("ftp.provider.searchPlaceholder",ftpTreeProvider.getCurrentRootPath()),
+      });
+
+      if (!keyword) {
+        return; // 用户取消操作
+      }
+      const searchResults = await ftpTreeProvider.searchItems(keyword);
+
+      if (searchResults.length > 0) {
+        vscode.window.showQuickPick(
+          searchResults.map(item => item.label),
+          { placeHolder: localize("ftp.provider.selectSearchResult") }
+        ).then(selected => {
+          if (selected) {
+            const selectedItem = searchResults.find(item => item.label === selected);
+            if (selectedItem) {
+              if (selectedItem.isDirectory) {
+                console.log("Selected directory:", selectedItem.path);
+                vscode.commands.executeCommand("ftpExplorer.setRootDirectory", selectedItem);
+              } else {
+                vscode.commands.executeCommand("ftpExplorer.openFile", selectedItem.path);
+              }
+            }
+          }
+        });
+      }
+    })
+  );
 }
 
 function deactivate() { }

@@ -114,6 +114,11 @@
         "icon": "$(add)"
       },
       {
+        "command": "ftpExplorer.searchItems",
+        "title": "%ftp.provider.searchItems%",
+        "icon": "$(search)"
+      },
+      {
         "command": "ftpExplorer.openSettings",
         "title": "%ftpExplorer.openSettings%",
         "icon": "$(settings)"
@@ -204,14 +209,19 @@
           "group": "navigation@2"
         },
         {
-          "command": "ftpExplorer.createFolder",
+          "command": "ftpExplorer.searchItems",
           "when": "view == ftp-explorer && ftpExplorer.connected",
           "group": "navigation@3"
         },
         {
-          "command": "ftpExplorer.uploadItem",
+          "command": "ftpExplorer.createFolder",
           "when": "view == ftp-explorer && ftpExplorer.connected",
           "group": "navigation@4"
+        },
+        {
+          "command": "ftpExplorer.uploadItem",
+          "when": "view == ftp-explorer && ftpExplorer.connected",
+          "group": "navigation@5"
         }
       ]
     }

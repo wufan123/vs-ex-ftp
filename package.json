@@ -97,7 +97,7 @@
         {
           "id": "ftp-explorer",
           "name": "%ftpExplorerName%",
-          "contextualTitle": "%title%" 
+          "contextualTitle": "%title%"
         }
       ]
     },
@@ -108,6 +108,11 @@
       }
     ],
     "commands": [
+      {
+        "command": "ftpExplorer.createFolder",
+        "title": "%ftp.provider.createFolder%",
+        "icon": "$(add)"
+      },
       {
         "command": "ftpExplorer.openSettings",
         "title": "%ftpExplorer.openSettings%",
@@ -189,19 +194,24 @@
       ],
       "view/title": [
         {
+          "command": "ftpExplorer.openSettings",
+          "when": "view == ftp-explorer && ftpExplorer.connected",
+          "group": "navigation@1"
+        },
+        {
           "command": "ftpExplorer.refresh",
           "when": "view == ftp-explorer && ftpExplorer.refreshEnabled && ftpExplorer.connected",
-          "group": "navigation"
+          "group": "navigation@2"
+        },
+        {
+          "command": "ftpExplorer.createFolder",
+          "when": "view == ftp-explorer && ftpExplorer.connected",
+          "group": "navigation@3"
         },
         {
           "command": "ftpExplorer.uploadItem",
           "when": "view == ftp-explorer && ftpExplorer.connected",
-          "group": "navigation"
-        },
-        {
-          "command": "ftpExplorer.openSettings",
-          "when": "view == ftp-explorer && ftpExplorer.connected",
-          "group": "navigation"
+          "group": "navigation@4"
         }
       ]
     }

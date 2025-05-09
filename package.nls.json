@@ -82,5 +82,12 @@
   "ftp.provider.invalidName": "Name cannot be empty",
   "ftp.provider.renaming": "Renaming {0} to {1}...",
   "ftp.provider.renameSuccess": "Successfully renamed {0} to {1}",
-  "ftp.provider.invalidNameCharacters": "The name contains invalid characters: {0}"
+  "ftp.provider.invalidNameCharacters": "The name contains invalid characters: {0}",
+  "ftp.provider.enterNewFolderName": "Enter the name for the new folder",
+  "ftp.provider.invalidFolderName": "Folder name cannot be empty",
+  "ftp.provider.invalidFolderNameCharacters": "Folder name contains invalid characters: {0}",
+  "ftp.provider.createFolder": "Create Folder",
+  "ftp.provider.creatingFolder": "Creating folder: {0}...",
+  "ftp.provider.createFolderSuccess": "Folder created: {0}",
+  "ftp.provider.createFolderFailed": "Failed to create folder: {0}"
 }

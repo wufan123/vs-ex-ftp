@@ -83,5 +83,12 @@
   "ftp.provider.renaming": "正在将 {0} 重命名为 {1}...",
   "ftp.provider.renameSuccess": "成功将 {0} 重命名为 {1}",
   "ftp.provider.renameFailed": "重命名失败:{0}",
-  "ftp.provider.invalidNameCharacters": "名称包含无效字符: {0}"
+  "ftp.provider.invalidNameCharacters": "名称包含无效字符: {0}",
+  "ftp.provider.enterNewFolderName": "输入新建文件夹的名称",
+  "ftp.provider.invalidFolderName": "文件夹名称不能为空",
+  "ftp.provider.invalidFolderNameCharacters": "文件夹名称包含无效字符: {0}",
+  "ftp.provider.createFolder": "创建文件夹",
+  "ftp.provider.creatingFolder": "正在创建文件夹: {0}...",
+  "ftp.provider.createFolderSuccess": "文件夹已创建: {0}",
+  "ftp.provider.createFolderFailed": "创建文件夹失败: {0}"
 }

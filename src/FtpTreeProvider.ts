@@ -998,6 +998,53 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
       }
     );
   }
+
+  public async createFolder(): Promise<void> {
+    const folderName = await vscode.window.showInputBox({
+        prompt: localize("ftp.provider.enterNewFolderName"),
+        validateInput: (input) => {
+            if (!input || input.trim() === "") {
+                return localize("ftp.provider.invalidFolderName");
+            }
+            const invalidChars = /[<>:"/\\|?*\x00-\x1F]/g; // Windows 文件名非法字符
+            const matches = input.match(invalidChars);
+            if (matches) {
+                return localize(
+                    "ftp.provider.invalidFolderNameCharacters",
+                    [...new Set(matches)].join(", ")
+                );
+            }
+            return null;
+        },
+    });
+
+    if (!folderName) {
+        return; // 用户取消操作
+    }
+
+    const newFolderPath = `${this.getCurrentRootPath()}/${folderName}`;
+
+    vscode.window.withProgress(
+        {
+            location: vscode.ProgressLocation.Notification,
+            title: localize("ftp.provider.creatingFolder", `Creating folder: ${folderName}`),
+            cancellable: false,
+        },
+        async () => {
+            try {
+                await this.ftpClient.createDirectory(newFolderPath);
+                vscode.window.showInformationMessage(
+                    localize("ftp.provider.createFolderSuccess", `Folder created: ${folderName}`)
+                );
+                await this.refreshFTPItems(this.getCurrentRootPath());
+            } catch (error) {
+                vscode.window.showErrorMessage(
+                    localize("ftp.provider.createFolderFailed", `Failed to create folder: ${error.message}`)
+                );
+            }
+        }
+    );
+  }
 }
 
 export class FtpItem extends vscode.TreeItem {
@@ -1043,6 +1090,7 @@ export class FtpItem extends vscode.TreeItem {
           title: localize("ftpExplorer.openFile"),
           arguments: [this.path],
         };
+        this.contextValue = isDirectory ? "folder" : "file";
     }
   }
 }

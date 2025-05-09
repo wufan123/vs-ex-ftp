@@ -114,6 +114,13 @@ function activate(context: vscode.ExtensionContext) {
       }
     )
   );
+
+  // 注册新建文件夹命令
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ftpExplorer.createFolder", async (item: FtpItem) => {
+        await ftpTreeProvider.createFolder();
+    })
+  );
 }
 
 function deactivate() {}

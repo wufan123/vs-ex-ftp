@@ -358,6 +358,7 @@ class FTPClientWrapper {
   }
 
   public async rename(oldPath: string, newPath: string): Promise<void> {
+    this.close();
     await this.connect();
     try {
       await this.client.rename(oldPath, newPath);
@@ -421,7 +422,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
       vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: localize("ftp.provider.downloading",truncatedNames), // 更新本地化前缀
+          title: localize("ftp.provider.downloading", truncatedNames), // 更新本地化前缀
           cancellable: true,
         },
         async (progress, token) => {
@@ -457,10 +458,10 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
 
             if (!token.isCancellationRequested) {
               vscode.window.showInformationMessage(
-                localize("ftp.provider.downloadSuccess",truncatedNames,targetDir),
+                localize("ftp.provider.downloadSuccess", truncatedNames, targetDir),
                 localize('ftp.provider.openFolder')
               ).then(selection => {
-                if (selection === localize('ftp.provider.openFolder')){
+                if (selection === localize('ftp.provider.openFolder')) {
                   vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(targetDir));
                 }
               });
@@ -673,7 +674,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: localize("ftp.provider.deleting", truncatedNames), 
+        title: localize("ftp.provider.deleting", truncatedNames),
         cancellable: false,
       },
       async (progress) => {
@@ -744,7 +745,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
       : undefined;
     if (!workspaceFolder) {
       vscode.window.showErrorMessage(
-        localize("ftp.provider.noWorkspaceFolder", "No workspace folder found.")
+        localize("ftp.provider.noWorkspaceFolder")
       );
       return;
     }
@@ -781,7 +782,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
       ? [{ fsPath: workspaceFolder }]
       : await vscode.window.showOpenDialog({
         canSelectFolders: action === localize("ftp.provider.uploadFolder"),
-        canSelectFiles: action === localize("ftp.provider.uploadFiles"), // 支持多选文件
+        canSelectFiles: action === localize("ftp.provider.uploadFile"), // 支持多选文件
         canSelectMany: true, // 允许多选
         openLabel: action,
         defaultUri: defaultUri,
@@ -798,14 +799,14 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
         this.currentRootPath || "",
         workspaceFolderName
       );
-    } else if (selectedFiles.length === 1) {
-      const selectedFolderName = path.basename(selectedFiles[0].fsPath);
-      remotePath = path.posix.join(
-        this.currentRootPath || "",
-        selectedFolderName
-      );
-    }
-
+    } 
+    // else if (selectedFiles.length === 1) {
+    //   const selectedFolderName = path.basename(selectedFiles[0].fsPath);
+    //   remotePath = path.posix.join(
+    //     this.currentRootPath || "",
+    //     selectedFolderName
+    //   );
+    // }
     if (confirmTheUploadDirectory) {
       remotePath = await vscode.window.showInputBox({
         prompt: localize("ftp.provider.enterDestinationPath"),
@@ -842,11 +843,11 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
               isUploadingWorkspace ||
               (await vscode.workspace.fs.stat(vscode.Uri.file(file.fsPath)))
                 .type === vscode.FileType.Directory;
-
             if (isDirectory) {
+              const remoteTargetPath = path.posix.join(remotePath, fileName);
               await this.uploadDirectoryWithStructure(
                 localPath,
-                remotePath,
+                remoteTargetPath,
                 progress,
                 token
               );
@@ -1072,17 +1073,17 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
       vscode.window.showErrorMessage(localize("ftp.provider.invalidSearchKeyword"));
       return [];
     }
-  
+
     try {
       const allItems = await this.loadFTPItems(this.currentPath);
       const filteredItems = allItems.filter(item =>
         item.label.toLowerCase().includes(keyword.toLowerCase())
       );
-  
+
       if (filteredItems.length === 0) {
         vscode.window.showInformationMessage(localize("ftp.provider.noSearchResults", keyword));
       }
-  
+
       return filteredItems;
     } catch (error) {
       vscode.window.showErrorMessage(localize("ftp.provider.searchFailed", error.message));

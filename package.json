@@ -153,6 +153,10 @@
         "command": "ftpExplorer.previewHtml",
         "title": "%ftpExplorer.previewHtml.title%",
         "category": "FTP Explorer"
+      },
+      {
+        "command": "ftpExplorer.renameItem",
+        "title": "%ftp.provider.renameItem%"
       }
     ],
     "menus": {
@@ -174,6 +178,11 @@
         },
         {
           "command": "ftpExplorer.previewHtml",
+          "when": "view == ftp-explorer",
+          "group": "navigation"
+        },
+        {
+          "command": "ftpExplorer.renameItem",
           "when": "view == ftp-explorer",
           "group": "navigation"
         }

@@ -357,6 +357,16 @@ class FTPClientWrapper {
     }
   }
 
+  public async rename(oldPath: string, newPath: string): Promise<void> {
+    await this.connect();
+    try {
+      await this.client.rename(oldPath, newPath);
+    } catch (error) {
+      console.error(`Failed to rename ${oldPath} to ${newPath}:`, error);
+      throw error;
+    }
+  }
+
   close(): void {
     if (!this.client.closed) {
       this.client.close();
@@ -940,6 +950,54 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     }
     return [];
   }
+
+  public async renameFTPItem(item: FtpItem): Promise<void> {
+    const newName = await vscode.window.showInputBox({
+      prompt: localize("ftp.provider.enterNewName"),
+      value: item.label,
+      validateInput: (input) => {
+      if (!input || input.trim() === "") {
+        return localize("ftp.provider.invalidName");
+      }
+      const invalidChars = /[<>:"/\\|?*\x00-\x1F]/g; // Windows 文件名非法字符
+      const matches = input.match(invalidChars);
+      if (matches) {
+        return localize(
+          "ftp.provider.invalidNameCharacters",
+          [...new Set(matches)].join(", ")
+        );
+      }
+      return null;
+      },
+    });
+
+    if (!newName || newName.trim() === item.label) {
+      return; // 用户取消或未修改名称
+    }
+
+    const newPath = this.getPathParentPath(item.path) + "/" + newName;
+
+    vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: localize("ftp.provider.renaming", item.label, newName),
+        cancellable: false,
+      },
+      async () => {
+        try {
+          await this.ftpClient.rename(item.path, newPath);
+          vscode.window.showInformationMessage(
+            localize("ftp.provider.renameSuccess", item.label, newName)
+          );
+          await this.refreshFTPItems(this.currentPath);
+        } catch (error) {
+          vscode.window.showErrorMessage(
+            localize("ftp.provider.renameFailed", error.message)
+          );
+        }
+      }
+    );
+  }
 }
 
 export class FtpItem extends vscode.TreeItem {
@@ -986,6 +1044,9 @@ export class FtpItem extends vscode.TreeItem {
           arguments: [this.path],
         };
       this.contextValue = isDirectory ? "folder" : "file";
+      if (path !== "/" && path !== "../") {
+        this.contextValue += ".rename"; // 添加重命名上下文
+      }
     }
   }
 }

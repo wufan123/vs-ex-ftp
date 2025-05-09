@@ -82,6 +82,13 @@ function activate(context: vscode.ExtensionContext) {
     )
   );
 
+  // 注册重命名文件/文件夹命令
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ftpExplorer.renameItem", async (item: FtpItem) => {
+      await ftpTreeProvider.renameFTPItem(item);
+    })
+  );
+
   // 注册文件打开命令
   const fileHandler = new FileHandler();
   context.subscriptions.push(

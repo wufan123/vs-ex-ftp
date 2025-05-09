@@ -76,5 +76,12 @@
   "ftpExplorer.previewHtml.title": "在浏览器中打开",
   "ftpExplorer.previewHtml.errorMessage": "无法在浏览器中打开：",
   "ftpExplorer.previewHtml.notHtmlWarning": "该文件不是 .html 文件",
-  "ftpExplorer.openBrowser.errorMessage": "无法打开浏览器: {0}"
+  "ftpExplorer.openBrowser.errorMessage": "无法打开浏览器: {0}",
+  "ftp.provider.renameItem": "重命名",
+  "ftp.provider.enterNewName": "输入项目的新名称",
+  "ftp.provider.invalidName": "名称不能为空",
+  "ftp.provider.renaming": "正在将 {0} 重命名为 {1}...",
+  "ftp.provider.renameSuccess": "成功将 {0} 重命名为 {1}",
+  "ftp.provider.renameFailed": "重命名失败:{0}",
+  "ftp.provider.invalidNameCharacters": "名称包含无效字符: {0}"
 }

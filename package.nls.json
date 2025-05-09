@@ -76,5 +76,11 @@
   "ftpExplorer.previewHtml.title": "open in Browser",
   "ftpExplorer.previewHtml.errorMessage": "Unable to open in browser: ",
   "ftpExplorer.previewHtml.notHtmlWarning": "The file is not a .html file",
-  "ftpExplorer.openBrowser.errorMessage": "Failed to open browser: {0}"
+  "ftpExplorer.openBrowser.errorMessage": "Failed to open browser: {0}",
+  "ftp.provider.renameItem": "rename item",
+  "ftp.provider.enterNewName": "Enter the new name for the item",
+  "ftp.provider.invalidName": "Name cannot be empty",
+  "ftp.provider.renaming": "Renaming {0} to {1}...",
+  "ftp.provider.renameSuccess": "Successfully renamed {0} to {1}",
+  "ftp.provider.invalidNameCharacters": "The name contains invalid characters: {0}"
 }

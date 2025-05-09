@@ -237,7 +237,7 @@
     "lint": "eslint src",
     "test": "vscode-test",
     "vb": "vsce package",
-    "vp": "vsce publish"
+    "vp": "git push github && vsce publish"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.8",

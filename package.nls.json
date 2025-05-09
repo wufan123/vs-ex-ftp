@@ -89,5 +89,7 @@
   "ftp.provider.createFolder": "Create Folder",
   "ftp.provider.creatingFolder": "Creating folder: {0}...",
   "ftp.provider.createFolderSuccess": "Folder created: {0}",
-  "ftp.provider.createFolderFailed": "Failed to create folder: {0}"
+  "ftp.provider.createFolderFailed": "Failed to create folder: {0}",
+  "ftp.provider.openFolder": "Open folder",
+  "ftp.provider.openFilePrompt": "Open in editor?"
 }

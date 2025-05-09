@@ -404,7 +404,9 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     return this.currentRootPath;
   }
 
-  public async downloadToDirectory(item: FtpItem) {
+  public async downloadToDirectory(items: FtpItem[]) {
+    const itemNames = items.map(item => item.label).join(", ");
+    const truncatedNames = itemNames.length > 50 ? itemNames.slice(0, 50) + "..." : itemNames;
     const folderUris = await vscode.window.showOpenDialog({
       canSelectFiles: false,
       canSelectFolders: true,
@@ -414,13 +416,12 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
 
     if (folderUris && folderUris[0]) {
       const targetDir = folderUris[0].fsPath;
-      const sourcePath = item.path;
       const cancellationTokenSource = new vscode.CancellationTokenSource();
 
       vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: localize("ftp.provider.downloading", item.label), // 更新本地化前缀
+          title: localize("ftp.provider.downloading",truncatedNames), // 更新本地化前缀
           cancellable: true,
         },
         async (progress, token) => {
@@ -432,25 +433,37 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
           });
 
           try {
-            if (item.isDirectory) {
-              await this.ftpClient.downloadDirectory(
-                sourcePath,
-                targetDir,
-                progress,
-                cancellationTokenSource.token
-              );
-            } else {
-              await this.ftpClient.downloadFile(
-                sourcePath,
-                targetDir,
-                progress,
-                cancellationTokenSource.token
-              );
+            for (const item of items) {
+              if (token.isCancellationRequested) {
+                break; // 如果任务被取消，停止下载
+              }
+              const sourcePath = item.path;
+              if (item.isDirectory) {
+                await this.ftpClient.downloadDirectory(
+                  sourcePath,
+                  targetDir,
+                  progress,
+                  cancellationTokenSource.token
+                );
+              } else {
+                await this.ftpClient.downloadFile(
+                  sourcePath,
+                  targetDir,
+                  progress,
+                  cancellationTokenSource.token
+                );
+              }
             }
+
             if (!token.isCancellationRequested) {
               vscode.window.showInformationMessage(
-                localize("ftp.provider.downloadSuccess", item.label, targetDir)
-              ); // 更新本地化前缀
+                localize("ftp.provider.downloadSuccess",truncatedNames,targetDir),
+                localize('ftp.provider.openFolder')
+              ).then(selection => {
+                if (selection === localize('ftp.provider.openFolder')){
+                  vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(targetDir));
+                }
+              });
             }
           } catch (error) {
             if (!token.isCancellationRequested) {
@@ -642,42 +655,49 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     return parentPath === "" ? "/" : parentPath;
   }
 
-  public async deleteFTPItem(item: FtpItem): Promise<void> {
+  public async deleteFTPItems(items: FtpItem[]): Promise<void> {
+    const itemNames = items.map(item => item.label).join(", ");
+    const truncatedNames = itemNames.length > 50 ? itemNames.slice(0, 50) + "..." : itemNames;
     const confirmDelete = await vscode.window.showWarningMessage(
-      localize("ftp.provider.confirmDelete", item.label),
+      localize(
+        "ftp.provider.confirmDelete",
+        truncatedNames
+      ),
       localize("ftp.provider.yes"),
       localize("ftp.provider.no")
-    ); // 更新本地化前缀
+    );
 
     if (confirmDelete !== localize("ftp.provider.yes", "Yes")) return;
 
     vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: localize("ftp.provider.deleting", item.label),
+        title: localize("ftp.provider.deleting", truncatedNames), 
         cancellable: false,
       },
       async (progress) => {
         try {
-          if (item.isDirectory) {
-            await this.ftpClient.removeDirectory(item.path);
-          } else {
-            await this.ftpClient.removeFile(item.path);
+          for (const item of items) {
+            if (item.isDirectory) {
+              await this.ftpClient.removeDirectory(item.path);
+            } else {
+              await this.ftpClient.removeFile(item.path);
+            }
           }
           progress.report({ increment: 100 });
           vscode.window.showInformationMessage(
-            localize("ftp.provider.deleteSuccess", item.label)
-          ); // 更新本地化前缀
+            localize(
+              "ftp.provider.deleteSuccess", truncatedNames
+            )
+          );
           await this.refreshFTPItems(this.currentPath);
         } catch (error) {
           vscode.window.showErrorMessage(
             localize(
-              "ftp.provider.deleteFailed",
-              "Failed to delete {0}: {1}",
-              item.label,
+              "ftp.provider.deleteFailed", truncatedNames,
               error.message
             )
-          ); // 更新本地化前缀
+          );
         }
       }
     );
@@ -759,12 +779,12 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     const selectedFiles = isUploadingWorkspace
       ? [{ fsPath: workspaceFolder }]
       : await vscode.window.showOpenDialog({
-          canSelectFolders: action === localize("ftp.provider.uploadFolder"),
-          canSelectFiles: action === localize("ftp.provider.uploadFiles"), // 支持多选文件
-          canSelectMany: true, // 允许多选
-          openLabel: action,
-          defaultUri: defaultUri,
-        });
+        canSelectFolders: action === localize("ftp.provider.uploadFolder"),
+        canSelectFiles: action === localize("ftp.provider.uploadFiles"), // 支持多选文件
+        canSelectMany: true, // 允许多选
+        openLabel: action,
+        defaultUri: defaultUri,
+      });
 
     if (!selectedFiles || selectedFiles.length === 0) {
       return;
@@ -956,18 +976,18 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
       prompt: localize("ftp.provider.enterNewName"),
       value: item.label,
       validateInput: (input) => {
-      if (!input || input.trim() === "") {
-        return localize("ftp.provider.invalidName");
-      }
-      const invalidChars = /[<>:"/\\|?*\x00-\x1F]/g; // Windows 文件名非法字符
-      const matches = input.match(invalidChars);
-      if (matches) {
-        return localize(
-          "ftp.provider.invalidNameCharacters",
-          [...new Set(matches)].join(", ")
-        );
-      }
-      return null;
+        if (!input || input.trim() === "") {
+          return localize("ftp.provider.invalidName");
+        }
+        const invalidChars = /[<>:"/\\|?*\x00-\x1F]/g; // Windows 文件名非法字符
+        const matches = input.match(invalidChars);
+        if (matches) {
+          return localize(
+            "ftp.provider.invalidNameCharacters",
+            [...new Set(matches)].join(", ")
+          );
+        }
+        return null;
       },
     });
 
@@ -1001,48 +1021,48 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
 
   public async createFolder(): Promise<void> {
     const folderName = await vscode.window.showInputBox({
-        prompt: localize("ftp.provider.enterNewFolderName"),
-        validateInput: (input) => {
-            if (!input || input.trim() === "") {
-                return localize("ftp.provider.invalidFolderName");
-            }
-            const invalidChars = /[<>:"/\\|?*\x00-\x1F]/g; // Windows 文件名非法字符
-            const matches = input.match(invalidChars);
-            if (matches) {
-                return localize(
-                    "ftp.provider.invalidFolderNameCharacters",
-                    [...new Set(matches)].join(", ")
-                );
-            }
-            return null;
-        },
+      prompt: localize("ftp.provider.enterNewFolderName"),
+      validateInput: (input) => {
+        if (!input || input.trim() === "") {
+          return localize("ftp.provider.invalidFolderName");
+        }
+        const invalidChars = /[<>:"/\\|?*\x00-\x1F]/g; // Windows 文件名非法字符
+        const matches = input.match(invalidChars);
+        if (matches) {
+          return localize(
+            "ftp.provider.invalidFolderNameCharacters",
+            [...new Set(matches)].join(", ")
+          );
+        }
+        return null;
+      },
     });
 
     if (!folderName) {
-        return; // 用户取消操作
+      return; // 用户取消操作
     }
 
     const newFolderPath = `${this.getCurrentRootPath()}/${folderName}`;
 
     vscode.window.withProgress(
-        {
-            location: vscode.ProgressLocation.Notification,
-            title: localize("ftp.provider.creatingFolder", `Creating folder: ${folderName}`),
-            cancellable: false,
-        },
-        async () => {
-            try {
-                await this.ftpClient.createDirectory(newFolderPath);
-                vscode.window.showInformationMessage(
-                    localize("ftp.provider.createFolderSuccess", `Folder created: ${folderName}`)
-                );
-                await this.refreshFTPItems(this.getCurrentRootPath());
-            } catch (error) {
-                vscode.window.showErrorMessage(
-                    localize("ftp.provider.createFolderFailed", `Failed to create folder: ${error.message}`)
-                );
-            }
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: localize("ftp.provider.creatingFolder", `Creating folder: ${folderName}`),
+        cancellable: false,
+      },
+      async () => {
+        try {
+          await this.ftpClient.createDirectory(newFolderPath);
+          vscode.window.showInformationMessage(
+            localize("ftp.provider.createFolderSuccess", `Folder created: ${folderName}`)
+          );
+          await this.refreshFTPItems(this.getCurrentRootPath());
+        } catch (error) {
+          vscode.window.showErrorMessage(
+            localize("ftp.provider.createFolderFailed", `Failed to create folder: ${error.message}`)
+          );
         }
+      }
     );
   }
 }
@@ -1090,7 +1110,7 @@ export class FtpItem extends vscode.TreeItem {
           title: localize("ftpExplorer.openFile"),
           arguments: [this.path],
         };
-        this.contextValue = isDirectory ? "folder" : "file";
+      this.contextValue = isDirectory ? "folder" : "file";
     }
   }
 }

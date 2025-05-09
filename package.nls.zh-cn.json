@@ -90,5 +90,7 @@
   "ftp.provider.createFolder": "创建文件夹",
   "ftp.provider.creatingFolder": "正在创建文件夹: {0}...",
   "ftp.provider.createFolderSuccess": "文件夹已创建: {0}",
-  "ftp.provider.createFolderFailed": "创建文件夹失败: {0}"
+  "ftp.provider.createFolderFailed": "创建文件夹失败: {0}",
+  "ftp.provider.openFolder": "打开文件夹",
+  "ftp.provider.openFilePrompt": "是否在编辑器打开?"
 }

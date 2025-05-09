@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
 import { FtpItem, FtpTreeProvider } from "./FtpTreeProvider";
 import { FileHandler } from "./FileHandler";
-const nls = require("vscode-nls-i18n");
+const { localize,init} = require("vscode-nls-i18n");
 import { BrowserOpener } from "./BrowserOpener";
 
 function activate(context: vscode.ExtensionContext) {
-  nls.init(context.extensionPath);
+  init(context.extensionPath);
   // 注册ftp视图
   const ftpTreeProvider = new FtpTreeProvider();
   const treeView = vscode.window.createTreeView("ftp-explorer", {
@@ -45,9 +45,16 @@ function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "ftpExplorer.downloadToDirectory",
       (item: FtpItem) => {
-        // if(!item)return new Error("没有下载目录");
-        console.log(item);
-        ftpTreeProvider.downloadToDirectory(item);
+        let selectedItems = [];
+        if (treeView.selection.length > 0) {
+          selectedItems = [...treeView.selection];
+        } else {
+          selectedItems = [item];
+        }
+        selectedItems = selectedItems.filter(
+          (selectedItem) => selectedItem.contextValue !== "special"
+        );
+        ftpTreeProvider.downloadToDirectory(selectedItems);
       }
     )
   );
@@ -56,8 +63,16 @@ function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "ftpExplorer.deleteItem",
       async (item: FtpItem) => {
-        console.log(item);
-        await ftpTreeProvider.deleteFTPItem(item);
+        let selectedItems = [];
+        if (treeView.selection.length > 0) {
+          selectedItems = [...treeView.selection];
+        } else {
+          selectedItems = [item];
+        }
+        selectedItems = selectedItems.filter(
+          (selectedItem) => selectedItem.contextValue !== "special"
+        );
+        await ftpTreeProvider.deleteFTPItems(selectedItems);
       }
     )
   );
@@ -100,12 +115,21 @@ function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "ftpExplorer.openFile",
       async (filePath: string) => {
-        const tempFilePath = await ftpTreeProvider.ftpClient.downloadToTempFile(
-          filePath
-        );
-        try {
-          await fileHandler.openFile(tempFilePath);
-        } catch (e) {}
+        const choice = await vscode.window.showQuickPick([
+          localize("ftp.provider.yes"),
+          localize("ftp.provider.no")
+        ], {
+          placeHolder: localize("ftp.provider.openFilePrompt"),
+        });
+        if (choice === localize("ftp.provider.yes")) {
+          const tempFilePath = await ftpTreeProvider.ftpClient.downloadToTempFile(
+            filePath
+          );
+          try {
+            await fileHandler.openFile(tempFilePath);
+          } catch (e) {
+          }
+        }
       }
     )
   );
@@ -123,13 +147,12 @@ function activate(context: vscode.ExtensionContext) {
   // 注册新建文件夹命令
   context.subscriptions.push(
     vscode.commands.registerCommand("ftpExplorer.createFolder", async (item: FtpItem) => {
-        await ftpTreeProvider.createFolder();
+      await ftpTreeProvider.createFolder();
     })
   );
-
 }
 
-function deactivate() {}
+function deactivate() { }
 
 module.exports = {
   activate,

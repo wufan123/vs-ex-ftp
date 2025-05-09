@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { FtpItem, FtpTreeProvider } from "./FtpTreeProvider";
 import { FileHandler } from "./FileHandler";
-const { localize,init} = require("vscode-nls-i18n");
+const { localize, init } = require("vscode-nls-i18n");
 import { BrowserOpener } from "./BrowserOpener";
 
 function activate(context: vscode.ExtensionContext) {
@@ -45,15 +45,13 @@ function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "ftpExplorer.downloadToDirectory",
       (item: FtpItem) => {
-        let selectedItems = [];
-        if (treeView.selection.length > 0) {
-          selectedItems = [...treeView.selection];
-        } else {
+        let selectedItems = [...treeView.selection];
+        selectedItems = selectedItems.filter(
+          (selectedItem) => selectedItem.contextValue != "special"
+        );
+        if (selectedItems.length <= 0) {
           selectedItems = [item];
         }
-        selectedItems = selectedItems.filter(
-          (selectedItem) => selectedItem.contextValue !== "special"
-        );
         ftpTreeProvider.downloadToDirectory(selectedItems);
       }
     )
@@ -63,15 +61,13 @@ function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "ftpExplorer.deleteItem",
       async (item: FtpItem) => {
-        let selectedItems = [];
-        if (treeView.selection.length > 0) {
-          selectedItems = [...treeView.selection];
-        } else {
+        let selectedItems = [...treeView.selection];
+        selectedItems = selectedItems.filter(
+          (selectedItem) => selectedItem.contextValue != "special"
+        );
+        if (selectedItems.length <= 0) {
           selectedItems = [item];
         }
-        selectedItems = selectedItems.filter(
-          (selectedItem) => selectedItem.contextValue !== "special"
-        );
         await ftpTreeProvider.deleteFTPItems(selectedItems);
       }
     )
@@ -156,7 +152,7 @@ function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("ftpExplorer.searchItems", async () => {
       const keyword = await vscode.window.showInputBox({
         prompt: localize("ftp.provider.enterSearchKeyword"),
-        placeHolder: localize("ftp.provider.searchPlaceholder",ftpTreeProvider.getCurrentRootPath()),
+        placeHolder: localize("ftp.provider.searchPlaceholder", ftpTreeProvider.getCurrentRootPath()),
       });
 
       if (!keyword) {

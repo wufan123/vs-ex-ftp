@@ -163,12 +163,12 @@
       "view/item/context": [
         {
           "command": "ftpExplorer.deleteItem",
-          "when": "view == ftp-explorer && (viewItem == folder || viewItem == file)",
+          "when": "view == ftp-explorer",
           "group": "navigation"
         },
         {
           "command": "ftpExplorer.downloadToDirectory",
-          "when": "view == ftp-explorer && (viewItem == folder || viewItem == file)",
+          "when": "view == ftp-explorer",
           "group": "navigation"
         },
         {

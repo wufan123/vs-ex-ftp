@@ -736,7 +736,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     const actions = [
       uploadCurrentWorkspaceAction,
       localize("ftp.provider.uploadFolder"),
-      localize("ftp.provider.uploadFile"),
+      localize("ftp.provider.uploadFile"), // 修改为支持多选文件
     ];
 
     const action = await vscode.window.showQuickPick(actions, {
@@ -759,12 +759,12 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     const selectedFiles = isUploadingWorkspace
       ? [{ fsPath: workspaceFolder }]
       : await vscode.window.showOpenDialog({
-        canSelectFolders: action === localize("ftp.provider.uploadFolder"),
-        canSelectFiles: action === localize("ftp.provider.uploadFile"),
-        canSelectMany: true,
-        openLabel: action,
-        defaultUri: defaultUri,
-      });
+          canSelectFolders: action === localize("ftp.provider.uploadFolder"),
+          canSelectFiles: action === localize("ftp.provider.uploadFiles"), // 支持多选文件
+          canSelectMany: true, // 允许多选
+          openLabel: action,
+          defaultUri: defaultUri,
+        });
 
     if (!selectedFiles || selectedFiles.length === 0) {
       return;
@@ -830,13 +830,13 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
                 token
               );
             } else {
-              // const remoteTargetPath = path.posix.join(remotePath, fileName);
+              const remoteTargetPath = path.posix.join(remotePath, fileName);
               if (token.isCancellationRequested) {
                 break; // 检查取消状态
               }
               await this.ftpClient.uploadFile(
                 localPath,
-                remotePath,
+                remoteTargetPath,
                 progress,
                 token
               );
@@ -1043,10 +1043,6 @@ export class FtpItem extends vscode.TreeItem {
           title: localize("ftpExplorer.openFile"),
           arguments: [this.path],
         };
-      this.contextValue = isDirectory ? "folder" : "file";
-      if (path !== "/" && path !== "../") {
-        this.contextValue += ".rename"; // 添加重命名上下文
-      }
     }
   }
 }

@@ -8,7 +8,10 @@ function activate(context: vscode.ExtensionContext) {
   nls.init(context.extensionPath);
   // 注册ftp视图
   const ftpTreeProvider = new FtpTreeProvider();
-  vscode.window.registerTreeDataProvider("ftp-explorer", ftpTreeProvider);
+  const treeView = vscode.window.createTreeView("ftp-explorer", {
+    treeDataProvider: ftpTreeProvider,
+    canSelectMany: true, // 启用多选功能
+  });
   ftpTreeProvider.refresh();
   //注册打开设置
   context.subscriptions.push(
@@ -43,7 +46,8 @@ function activate(context: vscode.ExtensionContext) {
       "ftpExplorer.downloadToDirectory",
       (item: FtpItem) => {
         // if(!item)return new Error("没有下载目录");
-        ftpTreeProvider.downloadToDirectory(item);
+        console.log(item);
+        // ftpTreeProvider.downloadToDirectory(item);
       }
     )
   );
@@ -52,7 +56,8 @@ function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "ftpExplorer.deleteItem",
       async (item: FtpItem) => {
-        await ftpTreeProvider.deleteFTPItem(item);
+        console.log(item);
+        // await ftpTreeProvider.deleteFTPItem(item);
       }
     )
   );
@@ -121,6 +126,7 @@ function activate(context: vscode.ExtensionContext) {
         await ftpTreeProvider.createFolder();
     })
   );
+
 }
 
 function deactivate() {}

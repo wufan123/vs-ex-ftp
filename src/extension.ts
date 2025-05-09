@@ -47,7 +47,7 @@ function activate(context: vscode.ExtensionContext) {
       (item: FtpItem) => {
         // if(!item)return new Error("没有下载目录");
         console.log(item);
-        // ftpTreeProvider.downloadToDirectory(item);
+        ftpTreeProvider.downloadToDirectory(item);
       }
     )
   );
@@ -57,7 +57,7 @@ function activate(context: vscode.ExtensionContext) {
       "ftpExplorer.deleteItem",
       async (item: FtpItem) => {
         console.log(item);
-        // await ftpTreeProvider.deleteFTPItem(item);
+        await ftpTreeProvider.deleteFTPItem(item);
       }
     )
   );

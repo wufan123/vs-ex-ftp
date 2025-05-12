@@ -657,6 +657,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     return parentPath === "" ? "/" : parentPath;
   }
 
+
   public async deleteFTPItems(items: FtpItem[]): Promise<void> {
     const itemNames = items.map(item => item.label).join(", ");
     const truncatedNames = itemNames.length > 50 ? itemNames.slice(0, 50) + "..." : itemNames;
@@ -793,14 +794,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     }
 
     let remotePath = this.currentRootPath;
-    if (isUploadingWorkspace) {
-      const workspaceFolderName = path.basename(workspaceFolder);
-      remotePath = path.posix.join(
-        this.currentRootPath || "",
-        workspaceFolderName
-      );
-    } 
-    // else if (selectedFiles.length === 1) {
+    // if (selectedFiles.length === 1) {
     //   const selectedFolderName = path.basename(selectedFiles[0].fsPath);
     //   remotePath = path.posix.join(
     //     this.currentRootPath || "",
@@ -844,7 +838,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
               (await vscode.workspace.fs.stat(vscode.Uri.file(file.fsPath)))
                 .type === vscode.FileType.Directory;
             if (isDirectory) {
-              const remoteTargetPath = path.posix.join(remotePath, fileName);
+              let remoteTargetPath = path.posix.join(remotePath, fileName);
               await this.uploadDirectoryWithStructure(
                 localPath,
                 remoteTargetPath,
@@ -882,6 +876,13 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
             );
             if (previewAfterUploading) {
               const browserOpener = new BrowserOpener();
+              if (isUploadingWorkspace) {
+                const workspaceFolderName = path.basename(workspaceFolder);
+                remotePath = path.posix.join(
+                  this.currentRootPath || "",
+                  workspaceFolderName
+                );
+              }
               browserOpener.openUrlInBrowser({ path: remotePath });
             }
           }
@@ -896,6 +897,22 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
         }
       }
     );
+  }
+  public previewWorkspace() {
+    const workspaceFolder = vscode.workspace.workspaceFolders
+      ? vscode.workspace.workspaceFolders[0].uri.fsPath
+      : undefined;
+    if (!workspaceFolder) {
+      vscode.window.showErrorMessage(
+        localize("ftp.provider.noWorkspaceFolder")
+      );
+      return;
+    }
+    let remotePath = path.posix.join(
+      this.currentRootPath || ""
+    );
+    const browserOpener = new BrowserOpener();
+    browserOpener.openUrlInBrowser({ path: remotePath });
   }
 
   private async uploadDirectoryWithStructure(

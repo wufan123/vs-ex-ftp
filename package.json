@@ -2,7 +2,7 @@
   "name": "vs-ex-ftp",
   "displayName": "ftp explorer",
   "description": "ftp explorer",
-  "version": "0.1.3", 
+  "version": "0.1.4",
   "publisher": "waslong",
   "license": "MIT",
   "repository": "https://github.com/wufan123/vs-ex-ftp",
@@ -165,11 +165,37 @@
         "category": "FTP Explorer"
       },
       {
+        "command": "ftpExplorer.previewWorkspace",
+        "title": "%ftpExplorer.previewWorkspace.title%",
+        "category": "FTP Explorer"
+      },
+      {
         "command": "ftpExplorer.renameItem",
         "title": "%ftp.provider.renameItem%"
       }
     ],
     "menus": {
+      "ftp-explorer": [
+        {
+          "command": "ftpExplorer.createFolder",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "ftpExplorer.uploadItem",
+          "group": "navigation@99"
+        },
+        {
+          "command": "ftpExplorer.previewWorkspace",
+          "group": "navigation@99"
+        },
+        {
+          "command": "ftpExplorer.createFolder",
+          "when": "view == ftp-explorer",
+          "group": "navigation@99"
+        }
+      ],
       "view/item/context": [
         {
           "command": "ftpExplorer.deleteItem",

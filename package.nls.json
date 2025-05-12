@@ -74,6 +74,7 @@
   "ftp.provider.invalidDefaultUri": "The configured defaultUri {0} does not exist. Falling back to workspaceFolder.",
   "ftp.provider.invalidDefaultUriFormat": "The configured defaultUri {0} is not a valid path. Falling back to workspaceFolder.",
   "ftpExplorer.previewHtml.title": "open in Browser",
+"ftpExplorer.previewWorkspace.title": "Open FTP root path in browser",
   "ftpExplorer.previewHtml.errorMessage": "Unable to open in browser: ",
   "ftpExplorer.previewHtml.notHtmlWarning": "The file is not a .html file",
   "ftpExplorer.openBrowser.errorMessage": "Failed to open browser: {0}",

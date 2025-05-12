@@ -139,6 +139,15 @@ function activate(context: vscode.ExtensionContext) {
       }
     )
   );
+  //注册预览当前目录命令
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "ftpExplorer.previewWorkspace",
+      async (item: vscode.Uri) => {
+        ftpTreeProvider.previewWorkspace();
+      }
+    )
+  );
 
   // 注册新建文件夹命令
   context.subscriptions.push(

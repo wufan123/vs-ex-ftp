@@ -8,13 +8,14 @@ export class BrowserOpener {
     public openUrlInBrowser(item: { path: string }): void {
         const config = vscode.workspace.getConfiguration('ftpClient');
         const baseUrl = config.get<string>('5.baseUrl', '');
-        if(!baseUrl){
+        if (!baseUrl) {
             let errMessage = localize('ftp.connection.error.notConfigured', "baseUrl");
             // vscode.window.showErrorMessage(errMessage);
             vscode.commands.executeCommand('workbench.action.openSettings', 'ftpClient');
             throw new Error(errMessage);
         }
-        const url = `${baseUrl}${item.path}`;
+        const path = item.path;
+        let url = `${baseUrl}${path}`;
         const browserOpener = new BrowserOpener();
         // if (url.endsWith('.html')) {
         try {

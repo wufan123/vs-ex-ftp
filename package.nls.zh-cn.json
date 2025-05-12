@@ -74,6 +74,7 @@
   "ftp.provider.invalidDefaultUri": "配置的 defaultUri {0} 不存在，已回退到 workspaceFolder。",
   "ftp.provider.invalidDefaultUriFormat": "配置的 defaultUri {0} 不是一个合法路径，已回退到 workspaceFolder。",
   "ftpExplorer.previewHtml.title": "在浏览器中打开",
+  "ftpExplorer.previewWorkspace.title": "在浏览器中打开ftp根路径",
   "ftpExplorer.previewHtml.errorMessage": "无法在浏览器中打开：",
   "ftpExplorer.previewHtml.notHtmlWarning": "该文件不是 .html 文件",
   "ftpExplorer.openBrowser.errorMessage": "无法打开浏览器: {0}",

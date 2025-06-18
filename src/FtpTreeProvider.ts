@@ -306,7 +306,9 @@ class FTPClientWrapper {
     }
 
     try {
-      // 包装上传任务和取消逻辑
+      // 先确保远程目录存在，只传目录部分
+      const remoteDir = path.posix.dirname(remotePath);
+      await this.client.ensureDir(remoteDir);
       await Promise.race([
         this.client.uploadFrom(localPath, remotePath), // 上传任务
         cancellationPromise, // 取消逻辑
@@ -333,6 +335,7 @@ class FTPClientWrapper {
     progress?: vscode.Progress<{ increment?: number }>
   ) {
     await this.connect();
+    await this.client.ensureDir(remoteDir);
     try {
       await this.client.uploadFromDir(localDir, remoteDir);
     } catch (error) {
@@ -669,10 +672,10 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     const confirmDelete = await vscode.window.showQuickPick([
       localize("ftp.provider.yes"),
       localize("ftp.provider.no")], {
-        placeHolder: localize(
-          "ftp.provider.confirmDelete",
-          truncatedNames
-        ),
+      placeHolder: localize(
+        "ftp.provider.confirmDelete",
+        truncatedNames
+      ),
     }
     );
 
@@ -946,7 +949,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     );
   }
   */
-  public async uploadToFTP(item?: any) {
+  public async uploadToFTP(item?: any, maintainTheHierarchy = false) {
     // 统一处理本地 explorer 右键和 FTP 面板
     let uploadFiles: { fsPath: string }[] = [];
     let remotePath = this.currentRootPath;
@@ -1036,12 +1039,28 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
           for (const file of uploadFiles) {
             if (token.isCancellationRequested) break;
             const localPath = file.fsPath;
-            const fileName = path.basename(localPath);
+            let fileName = "";
+            if (maintainTheHierarchy) {
+              // 以工作区为根，保留相对路径结构
+              const workspaceFolder = vscode.workspace.workspaceFolders
+                ? vscode.workspace.workspaceFolders[0].uri.fsPath
+                : undefined;
+              if (workspaceFolder && localPath.startsWith(workspaceFolder)) {
+                // 保留相对路径（带前导斜杠）
+                fileName = localPath.substring(workspaceFolder.length).replace(/\\/g, "/");
+                if (!fileName.startsWith("/")) fileName = "/" + fileName;
+              } else {
+                fileName = path.basename(localPath);
+              }
+            } else {
+              fileName = path.basename(localPath);
+            }
             const stat = await vscode.workspace.fs.stat(vscode.Uri.file(localPath));
             const isDirectory =
               isUploadingWorkspace ||
               stat.type === vscode.FileType.Directory;
             const remoteTargetPath = path.posix.join(remotePath, fileName);
+            console.log("remoteTargetPath", remoteTargetPath);
             if (isDirectory) {
               await this.uploadDirectoryWithStructure(
                 localPath,
@@ -1070,7 +1089,6 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
               )
             );
             await this.refreshFTPItems(this.currentPath);
-
           }
         } catch (error) {
           if (!token.isCancellationRequested) {
@@ -1078,38 +1096,40 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
               localize("ftp.provider.uploadFailed", error.message)
             );
           }
+          return;
         } finally {
           cancellationTokenSource.dispose();
-          const config = vscode.workspace.getConfiguration("ftpClient.m10");
-          const previewAfterUploading = config.get<boolean>("previewAfterUploading");
-          if (previewAfterUploading) {
-            const browserOpener = new BrowserOpener();
-            if (isUploadingWorkspace) {
-              const workspaceFolderName = path.basename(uploadFiles[0].fsPath);
-              remotePath = path.posix.join(
-                this.currentRootPath || "",
-                workspaceFolderName
-              );
-            }
-            // 判断5分钟内是否打开过相同地址
-            const now = new Date().getTime();
-            if (
-              context.browserLastOpenPath === remotePath &&
-              context.browserLastOpenTime &&
-              now - context.browserLastOpenTime < 5 * 60 * 1000
-            ) {
+        }
 
-              const confirm = await vscode.window.showQuickPick([localize("ftp.provider.yes"),
-              localize("ftp.provider.no")], { placeHolder: localize("ftp.provider.confirmOpenAgain", remotePath) }
-              );
-              if (confirm !== localize("ftp.provider.yes")) {
-                return;
-              }
-            }
-            context.browserLastOpenPath = remotePath;
-            context.browserLastOpenTime = now;
-            browserOpener.openUrlInBrowser({ path: remotePath });
+        const config = vscode.workspace.getConfiguration("ftpClient.m10");
+        const previewAfterUploading = config.get<boolean>("previewAfterUploading");
+        if (previewAfterUploading) {
+          const browserOpener = new BrowserOpener();
+          if (isUploadingWorkspace) {
+            const workspaceFolderName = path.basename(uploadFiles[0].fsPath);
+            remotePath = path.posix.join(
+              this.currentRootPath || "",
+              workspaceFolderName
+            );
           }
+          // 判断5分钟内是否打开过相同地址
+          const now = new Date().getTime();
+          if (
+            context.browserLastOpenPath === remotePath &&
+            context.browserLastOpenTime &&
+            now - context.browserLastOpenTime < 5 * 60 * 1000
+          ) {
+
+            const confirm = await vscode.window.showQuickPick([localize("ftp.provider.yes"),
+            localize("ftp.provider.no")], { placeHolder: localize("ftp.provider.confirmOpenAgain", remotePath) }
+            );
+            if (confirm !== localize("ftp.provider.yes")) {
+              return;
+            }
+          }
+          context.browserLastOpenPath = remotePath;
+          context.browserLastOpenTime = now;
+          browserOpener.openUrlInBrowser({ path: remotePath });
         }
       }
     );

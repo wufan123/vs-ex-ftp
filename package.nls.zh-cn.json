@@ -74,7 +74,7 @@
   "ftp.provider.invalidDefaultUri": "配置的 defaultUri {0} 不存在，已回退到 workspaceFolder。",
   "ftp.provider.invalidDefaultUriFormat": "配置的 defaultUri {0} 不是一个合法路径，已回退到 workspaceFolder。",
   "ftpExplorer.previewHtml.title": "在浏览器中打开",
-  "ftpExplorer.previewWorkspace.title": "在浏览器中打开ftp根路径",
+  "ftpExplorer.previewWorkspace.title": "在浏览器中打开FTP根路径",
   "ftpExplorer.previewHtml.errorMessage": "无法在浏览器中打开：",
   "ftpExplorer.previewHtml.notHtmlWarning": "该文件不是 .html 文件",
   "ftpExplorer.openBrowser.errorMessage": "无法打开浏览器: {0}",
@@ -101,5 +101,16 @@
   "ftp.provider.invalidSearchKeyword": "无效的搜索关键字",
   "ftp.provider.noSearchResults": "没有找到搜索结果",
   "ftp.provider.searchFailed": "搜索失败",
-  "ftp.provider.confirmOpenAgain": "确认再次打开 {0}"
+  "ftp.provider.confirmOpenAgain": "确认再次打开 {0}",
+  "recentFiles": "最近修改的文件[ftp]",
+  "compressSettings": "压缩设置",
+  "compress.ignore": "忽略需要压缩的文件和目录。支持正则表达式。",
+  "compress.refreshRecentFiles": "刷新最近的文件",
+  "compress.compressDirectory": "压缩当前目录",
+  "compress.compressSelectedItems": "压缩项目",
+  "compress.completed": "压缩完成。{0} 大小：{1}",
+  "compress.error": "压缩错误：{0}",
+  "compress.openFolder": "打开文件夹",
+  "compress.openSettings": "打开压缩设置",
+  "viewsWelcome.noRecentFiles": "未找到最近的文件。打开工作区以查看最近的文件。"
 }

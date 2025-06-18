@@ -63,7 +63,7 @@
         },
         "ftpClient.7.ignore": {
           "type": "string",
-          "default": ".*\\.(zip|rar)$|\\.vscode$|node_modules",
+          "default": ".(zip|rar)$|.vscode$|node_modules|.git$|.svn$|.hg$|.idea$|.DS_Store$|.vscode-test$|.history$",
           "description": "%ftpClient.ignore%"
         },
         "ftpClient.8.defaultUri": {
@@ -99,6 +99,13 @@
           "name": "%ftpExplorerName%",
           "contextualTitle": "%title%"
         }
+      ],
+      "explorer": [
+        {
+          "id": "recent-files",
+          "name": "%recentFiles%",
+          "when": "workspaceFolderCount > 0"
+        }
       ]
     },
     "viewsWelcome": [
@@ -108,6 +115,20 @@
       }
     ],
     "commands": [
+      {
+        "command": "vs-ex-compress.refreshRecentFiles",
+        "title": "%compress.refreshRecentFiles%"
+      },
+      {
+        "command": "vs-ex-compress.compressDirectory",
+        "title": "%compress.compressDirectory%",
+        "icon": "media/zip1.svg"
+      },
+      {
+        "command": "vs-ex-compress.compressSelectedItems",
+        "title": "%compress.compressSelectedItems%",
+        "icon": "media/zip2.svg"
+      },
       {
         "command": "ftpExplorer.createFolder",
         "title": "%ftp.provider.createFolder%",
@@ -160,6 +181,11 @@
         "icon": "$(cloud-upload)"
       },
       {
+        "command": "ftpExplorer.uploadRecentItem",
+        "title": "%ftpExplorer.uploadItem%",
+        "category": "%ftpExplorerCategory%"
+      },
+      {
         "command": "ftpExplorer.previewHtml",
         "title": "%ftpExplorer.previewHtml.title%",
         "category": "FTP Explorer"
@@ -175,7 +201,7 @@
       }
     ],
     "menus": {
-      "ftp-explorer/context": [ 
+      "ftp-explorer/context": [
         {
           "command": "ftpExplorer.createFolder",
           "group": "navigation"
@@ -192,6 +218,16 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "ftpExplorer.uploadRecentItem",
+          "when": "view == recent-files",
+          "group": "navigation@99"
+        },
+        {
+          "command": "vs-ex-compress.compressSelectedItems",
+          "group": "avigation@99",
+          "when": "view == recent-files"
+        },
         {
           "command": "ftpExplorer.deleteItem",
           "when": "view == ftp-explorer",
@@ -219,6 +255,11 @@
         }
       ],
       "view/title": [
+        {
+          "command": "vs-ex-compress.compressDirectory",
+          "group": "navigation",
+          "when": "view == recent-files"
+        },
         {
           "command": "ftpExplorer.openSettings",
           "when": "view == ftp-explorer && ftpExplorer.connected",
@@ -275,6 +316,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "archiver": "7.0.1",
     "basic-ftp": "^5.0.5",
     "vscode-nls-i18n": "^0.2.4"
   },

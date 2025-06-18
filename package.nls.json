@@ -74,7 +74,7 @@
   "ftp.provider.invalidDefaultUri": "The configured defaultUri {0} does not exist. Falling back to workspaceFolder.",
   "ftp.provider.invalidDefaultUriFormat": "The configured defaultUri {0} is not a valid path. Falling back to workspaceFolder.",
   "ftpExplorer.previewHtml.title": "open in Browser",
-"ftpExplorer.previewWorkspace.title": "Open FTP root path in browser",
+  "ftpExplorer.previewWorkspace.title": "Open FTP root path in browser",
   "ftpExplorer.previewHtml.errorMessage": "Unable to open in browser: ",
   "ftpExplorer.previewHtml.notHtmlWarning": "The file is not a .html file",
   "ftpExplorer.openBrowser.errorMessage": "Failed to open browser: {0}",
@@ -100,5 +100,16 @@
   "ftp.provider.invalidSearchKeyword": "Invalid search keyword",
   "ftp.provider.noSearchResults": "No search results found",
   "ftp.provider.searchFailed": "Search failed",
-  "ftp.provider.confirmOpenAgain": "Confirm open again {0}"
+  "ftp.provider.confirmOpenAgain": "Confirm open again {0}",
+  "recentFiles": "Recent Modified Files[ftp]",
+  "compressSettings": "Compress Settings",
+  "compress.ignore": "Ignore files and directories to compress. Use regex.",
+  "compress.refreshRecentFiles": "Refresh Recent Files",
+  "compress.compressDirectory": "Compress Current Directory",
+  "compress.compressSelectedItems": "Compress Items",
+  "compress.completed": "Compression completed. {0} size: {1} bytes",
+  "compress.error": "Compression error: {0}",
+  "compress.openFolder": "Open Folder",
+  "compress.openSettings": "Open Compress Settings",
+  "viewsWelcome.noRecentFiles": "No recent files found. Open a workspace to see recent files."
 }

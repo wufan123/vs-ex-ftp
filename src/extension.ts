@@ -3,10 +3,64 @@ import { FtpItem, FtpTreeProvider } from "./FtpTreeProvider";
 import { FileHandler } from "./FileHandler";
 const { localize, init } = require("vscode-nls-i18n");
 import { BrowserOpener } from "./BrowserOpener";
-
+import RecentFilesTreeDataProvider from "./RecentFilesTreeDataProvider";
+import { compressDirectoryWithIgnore, compressSelectedItems } from "./CompressHelper";
 function activate(context: vscode.ExtensionContext) {
 
   init(context.extensionPath);
+  // *******
+  // 注册最近修改视图
+  const treeDataProvider = new RecentFilesTreeDataProvider();
+  const recentTreeView = vscode.window.createTreeView('recent-files', {
+    treeDataProvider,
+    canSelectMany: true // 启用多选功能
+  });
+  // 监听文件系统更改事件
+  const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*');
+  fileSystemWatcher.onDidChange(() => treeDataProvider.throttledRefresh());
+  fileSystemWatcher.onDidCreate(() => treeDataProvider.throttledRefresh());
+  fileSystemWatcher.onDidDelete(() => treeDataProvider.throttledRefresh());
+
+  const disposableRefresh = vscode.commands.registerCommand('vs-ex-compress.refreshRecentFiles', () => {
+    treeDataProvider.refresh();
+  });
+
+  const disposableCompress = vscode.commands.registerCommand('vs-ex-compress.compressDirectory', async () => {
+    if (!vscode.workspace.workspaceFolders) {
+      vscode.window.showErrorMessage('No workspace is open.');
+      return;
+    }
+    const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    await compressDirectoryWithIgnore(workspaceRoot);
+  });
+
+  // 在 activate 函数中注册新命令
+  const disposableCompressSelected = vscode.commands.registerCommand('vs-ex-compress.compressSelectedItems', async (item) => {
+    if (!vscode.workspace.workspaceFolders) {
+      vscode.window.showErrorMessage('No workspace is open.');
+      return;
+    }
+
+    // 获取当前选中的 TreeItem
+    let selectedItems = [...recentTreeView.selection]; // 将 readonly Uri[] 转换为普通数组
+    if (selectedItems.length <= 0) {
+      selectedItems = [item];
+    }
+    const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    await compressSelectedItems(selectedItems, workspaceRoot);
+  });
+
+  const disposableOpenSettings = vscode.commands.registerCommand('vs-ex-compress.openSettings', () => {
+    vscode.commands.executeCommand('workbench.action.openSettings', 'compress');
+  });
+  context.subscriptions.push(disposableOpenSettings);
+
+  context.subscriptions.push(disposableRefresh);
+  context.subscriptions.push(disposableCompress);
+  context.subscriptions.push(disposableCompressSelected);
+  context.subscriptions.push(recentTreeView);
+  context.subscriptions.push(fileSystemWatcher);
+
   // 注册ftp视图
   const ftpTreeProvider = new FtpTreeProvider();
   const treeView = vscode.window.createTreeView("ftp-explorer", {
@@ -75,8 +129,18 @@ function activate(context: vscode.ExtensionContext) {
   );
   // 注册上传命令
   context.subscriptions.push(
-    vscode.commands.registerCommand("ftpExplorer.uploadItem", async (item:vscode.Uri | vscode.Uri[]) => {
+    vscode.commands.registerCommand("ftpExplorer.uploadItem", async (item: vscode.Uri | vscode.Uri[]) => {
       await ftpTreeProvider.uploadToFTP(item);
+    })
+  );
+  // 注册上传最近文件命令
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ftpExplorer.uploadRecentItem", async (item) => {
+      let selectedItems = [...recentTreeView.selection]; // 将 readonly Uri[] 转换为普通数组
+      if (selectedItems.length <= 0) {
+        selectedItems = [item];
+      }
+      await ftpTreeProvider.uploadToFTP(selectedItems,true); 
     })
   );
   // 注册回到上一级命令

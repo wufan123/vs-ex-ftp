@@ -100,5 +100,6 @@
   "ftp.provider.selectSearchResult": "选择搜索结果",
   "ftp.provider.invalidSearchKeyword": "无效的搜索关键字",
   "ftp.provider.noSearchResults": "没有找到搜索结果",
-  "ftp.provider.searchFailed": "搜索失败"
+  "ftp.provider.searchFailed": "搜索失败",
+  "ftp.provider.confirmOpenAgain": "确认再次打开 {0}"
 }

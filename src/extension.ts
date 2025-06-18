@@ -5,6 +5,7 @@ const { localize, init } = require("vscode-nls-i18n");
 import { BrowserOpener } from "./BrowserOpener";
 
 function activate(context: vscode.ExtensionContext) {
+
   init(context.extensionPath);
   // 注册ftp视图
   const ftpTreeProvider = new FtpTreeProvider();
@@ -74,8 +75,8 @@ function activate(context: vscode.ExtensionContext) {
   );
   // 注册上传命令
   context.subscriptions.push(
-    vscode.commands.registerCommand("ftpExplorer.uploadItem", async () => {
-      await ftpTreeProvider.uploadToFTP();
+    vscode.commands.registerCommand("ftpExplorer.uploadItem", async (item:vscode.Uri | vscode.Uri[]) => {
+      await ftpTreeProvider.uploadToFTP(item);
     })
   );
   // 注册回到上一级命令

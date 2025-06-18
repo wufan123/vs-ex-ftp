@@ -666,13 +666,14 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
   public async deleteFTPItems(items: FtpItem[]): Promise<void> {
     const itemNames = items.map(item => item.label).join(", ");
     const truncatedNames = itemNames.length > 50 ? itemNames.slice(0, 50) + "..." : itemNames;
-    const confirmDelete = await vscode.window.showWarningMessage(
-      localize(
-        "ftp.provider.confirmDelete",
-        truncatedNames
-      ),
+    const confirmDelete = await vscode.window.showQuickPick([
       localize("ftp.provider.yes"),
-      localize("ftp.provider.no")
+      localize("ftp.provider.no")], {
+        placeHolder: localize(
+          "ftp.provider.confirmDelete",
+          truncatedNames
+        ),
+    }
     );
 
     if (confirmDelete !== localize("ftp.provider.yes", "Yes")) return;

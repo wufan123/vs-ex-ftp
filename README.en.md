@@ -1,115 +1,102 @@
-# FTP Explorer VS Code Extension
+# FTP Plus Toolbox (English)
 
-## Introduction
-The FTP Explorer extension for Visual Studio Code allows developers to seamlessly interact with remote FTP servers. You can browse remote directories, upload and download files and folders, delete files, and refresh FTP items directly within the VS Code interface. This extension streamlines FTP operations for developers who need to manage remote servers while coding locally.
-
----
-
-## Initial Configuration
-Before using the extension, you need to configure it with the necessary FTP details. Below is the list of configuration parameters:
-
-### Configuration Parameters
-
-1. **ftpClient.host** (string):
-   - Description: The hostname or IP address of the FTP server.
-   - Example: `"ftp.example.com"`
-
-2. **ftpClient.user** (string):
-   - Description: The username for FTP authentication.
-   - Example: `"username"`
-
-3. **ftpClient.password** (string):
-   - Description: The password for FTP authentication.
-   - Example: `"password"`
-
-4. **ftpClient.secure** (boolean):
-   - Description: Use secure FTP (FTPS).
-   - Default: `false`
-
-5. **ftpClient.path** (string):
-   - Description: The default path to connect to on the remote FTP server.
-   - Default: `"/"`
-
-6. **ftpClient.baseUrl** (string):
-   - Description: The base URL for previewing `.html` files in a browser.
-   - Default: `"http://192.168.63.174"`
-
-7. **ftpClient.ignore** (string):
-   - Description: A regular expression to ignore files or directories during uploads.
-   - Default: `"\.zip|\.rar|\.vscode|node_modules"`
+**FTP Plus Toolbox** is a powerful VS Code extension that integrates FTP file management, compression, fast upload/download, and more, helping you efficiently manage both local and remote files.
 
 ---
 
-## Features and Usage
+## Features
 
-### 1. **Browse FTP Directory**
-   - **Description**: View the remote directory structure directly in the VS Code sidebar.
-   - **Steps**:
-     1. Open the "FTP Explorer" view in the VS Code sidebar.
-     2. The remote directory structure will automatically load based on your configuration.
-     3. Click on directories to navigate.
+- **FTP File Management**
+  - Browse, upload, download, delete, and rename remote FTP files and folders
+  - Support multi-selection and batch operations
+  - Set any directory as the root
+  - Upload with directory structure
+  - Auto-preview in browser after upload
 
-### 2. **Upload Files and Folders**
-   - **Description**: Upload local files and directories to the remote server.
-   - **Steps**:
-     1. Right-click in the "FTP Explorer" view or use the command palette (`Ctrl+Shift+P`) to select `FTP Explorer: Upload Files` or `FTP Explorer: Upload Folder`.
-     2. Select the local files or folders you wish to upload.
-     3. Confirm the destination path or use the default provided.
-     4. Progress will be displayed in the notification area.
+- **Local File Compression**
+  - One-click compression of the current workspace directory
+  - Support ignore rules (e.g., node_modules, .git, etc.)
+  - Batch compress recently modified files
 
-### 3. **Download Files and Folders**
-   - **Description**: Download remote files or directories to your local workspace.
-   - **Steps**:
-     1. Right-click a file or folder in the "FTP Explorer" view and select `Download`.
-     2. Choose a local destination folder for the download.
-     3. The file or folder will be downloaded, and progress will be shown in the notification area.
+- **Recent Files View**
+  - Quickly view and operate on recently modified files
+  - Batch compress and upload
 
-### 4. **Delete Files and Directories**
-   - **Description**: Remove files or directories from the remote server.
-   - **Steps**:
-     1. Right-click a file or folder in the "FTP Explorer" view.
-     2. Select `Delete`.
-     3. Confirm the deletion action.
-     4. The file or directory will be removed from the remote server.
-
-### 5. **Refresh FTP Items**
-   - **Description**: Refresh the remote directory structure to reflect the latest state of the server.
-   - **Steps**:
-     1. Right-click in the "FTP Explorer" view.
-     2. Select `Refresh`.
-     3. The view will reload and display the updated directory structure.
-
-### 6. **Set Current Root Directory**
-   - **Description**: Change the root directory to a specific folder on the remote server.
-   - **Steps**:
-     1. Right-click a directory in the "FTP Explorer" view.
-     2. Select `Set as Root Directory`.
-     3. The selected directory will become the new root, and the view will update accordingly.
+- **Search & Preview**
+  - Search files/folders in remote FTP directories
+  - One-click browser preview for HTML files
 
 ---
 
-## Additional Commands
+## Getting Started
 
-- **Preview HTML in Browser**:
-  - Right-click on a `.html` file in the "FTP Explorer" view and select `Preview in Browser`.
-  - The file will open in your default browser using the configured `ftpClient.baseUrl`.
+1. **Install Extension**  
+   Search for `FTP Plus Toolbox` in the VS Code marketplace and install.
+
+2. **Configure FTP Connection**  
+   Fill in your FTP server info (host, user, password, baseUrl, etc.) in VS Code settings.
+
+3. **Use FTP Explorer**  
+   Click the **FTP Plus Toolbox** icon in the sidebar to browse and manage remote files.
+
+4. **Local Compression & Upload**  
+   - Right-click files/folders in the explorer or "Recent Files" view to compress or upload to FTP.
+   - Supports multi-selection and batch operations.
+
+---
+
+## Common Commands
+
+- `FTP: Connect`
+- `FTP: Refresh`
+- `FTP: Upload File/Folder`
+- `FTP: Download`
+- `FTP: Delete`
+- `FTP: Rename`
+- `FTP: Set as Root`
+- `FTP: Search Current Directory`
+- `FTP: Preview HTML`
+- `Compress: Compress Current Directory`
+- `Compress: Compress Selected Files`
+
+---
+
+## Settings
+
+| Setting | Description |
+| ------- | ----------- |
+| `ftpClient.1.host` | FTP server address |
+| `ftpClient.2.user` | Username |
+| `ftpClient.3.password` | Password |
+| `ftpClient.4.path` | Default remote path |
+| `ftpClient.5.baseUrl` | Base URL for remote preview |
+| `ftpClient.6.secure` | Enable FTPS |
+| `ftpClient.7.ignore` | Ignore rules for upload/compress |
+| `ftpClient.8.defaultUri` | Default local path |
+| `ftpClient.9.confirmTheUploadDirectory` | Confirm target directory before upload |
+| `ftpClient.m10.previewAfterUploading` | Auto preview after upload |
+
+---
+
+## Views
+
+- **FTP Explorer**  
+  Manage remote FTP files, supports right-click operations.
+- **Recent Files**  
+  Quickly access and batch operate on recently modified local files.
 
 ---
 
 ## FAQ
 
-1. **Why can’t I connect to my FTP server?**
-   - Check your `ftpClient.host`, `ftpClient.user`, and `ftpClient.password` configurations.
-   - Ensure the server is reachable and your credentials are correct.
-
-2. **How do I ignore specific files during upload?**
-   - Use the `ftpClient.ignore` configuration to define a regular expression for files and directories to exclude from uploads.
-
-3. **How do I update my FTP settings?**
-   - Open the VS Code settings (`Ctrl+,`), search for `ftpClient`, and update the required fields.
+- **Upload fails with Chinese/special characters?**  
+  Please ensure your FTP server supports such paths, or rename files/folders to English.
+- **Multi-select upload/compress not working?**  
+  Only supported in extension views (FTP Explorer, Recent Files). VS Code default explorer context menu only supports single selection.
 
 ---
 
-## License
-This extension is licensed under the [MIT License](LICENSE.md).
+## Open Source & Feedback
 
+- [GitHub Repository](https://github.com/wufan123/vs-ex-ftp)
+- Issues and PRs are welcome!

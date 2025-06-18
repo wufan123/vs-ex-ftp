@@ -101,7 +101,7 @@
   "ftp.provider.noSearchResults": "No search results found",
   "ftp.provider.searchFailed": "Search failed",
   "ftp.provider.confirmOpenAgain": "Confirm open again {0}",
-  "recentFiles": "Recent Modified Files[ftp]",
+  "recentFiles": "Recent Modified Files",
   "compressSettings": "Compress Settings",
   "compress.ignore": "Ignore files and directories to compress. Use regex.",
   "compress.refreshRecentFiles": "Refresh Recent Files",

@@ -102,7 +102,7 @@
   "ftp.provider.noSearchResults": "没有找到搜索结果",
   "ftp.provider.searchFailed": "搜索失败",
   "ftp.provider.confirmOpenAgain": "确认再次打开 {0}",
-  "recentFiles": "最近修改的文件[ftp]",
+  "recentFiles": "最近修改的文件",
   "compressSettings": "压缩设置",
   "compress.ignore": "忽略需要压缩的文件和目录。支持正则表达式。",
   "compress.refreshRecentFiles": "刷新最近的文件",

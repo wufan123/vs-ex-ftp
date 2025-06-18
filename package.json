@@ -175,7 +175,7 @@
       }
     ],
     "menus": {
-      "ftp-explorer": [
+      "ftp-explorer/context": [ 
         {
           "command": "ftpExplorer.createFolder",
           "group": "navigation"
@@ -188,11 +188,6 @@
         },
         {
           "command": "ftpExplorer.previewWorkspace",
-          "group": "navigation@99"
-        },
-        {
-          "command": "ftpExplorer.createFolder",
-          "when": "view == ftp-explorer",
           "group": "navigation@99"
         }
       ],

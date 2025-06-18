@@ -1069,35 +1069,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
               )
             );
             await this.refreshFTPItems(this.currentPath);
-            const config = vscode.workspace.getConfiguration("ftpClient.m10");
-            const previewAfterUploading = config.get<boolean>("previewAfterUploading");
-            if (previewAfterUploading) {
-              const browserOpener = new BrowserOpener();
-              if (isUploadingWorkspace) {
-                const workspaceFolderName = path.basename(uploadFiles[0].fsPath);
-                remotePath = path.posix.join(
-                  this.currentRootPath || "",
-                  workspaceFolderName
-                );
-              }
-              // 判断5分钟内是否打开过相同地址
-              const now = new Date().getTime();
-              if (
-                context.browserLastOpenPath === remotePath &&
-                context.browserLastOpenTime &&
-                now - context.browserLastOpenTime < 5 * 60 * 1000
-              ) {
-                const confirm = await vscode.window.showQuickPick([localize("ftp.provider.yes"),
-                localize("ftp.provider.no")], { placeHolder: localize("ftp.provider.confirmOpenAgain", remotePath) }
-                );
-                if (confirm !== localize("ftp.provider.yes")) {
-                  return;
-                }
-              }
-              context.browserLastOpenPath = remotePath;
-              context.browserLastOpenTime = now;
-              browserOpener.openUrlInBrowser({ path: remotePath });
-            }
+
           }
         } catch (error) {
           if (!token.isCancellationRequested) {
@@ -1107,6 +1079,36 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
           }
         } finally {
           cancellationTokenSource.dispose();
+          const config = vscode.workspace.getConfiguration("ftpClient.m10");
+          const previewAfterUploading = config.get<boolean>("previewAfterUploading");
+          if (previewAfterUploading) {
+            const browserOpener = new BrowserOpener();
+            if (isUploadingWorkspace) {
+              const workspaceFolderName = path.basename(uploadFiles[0].fsPath);
+              remotePath = path.posix.join(
+                this.currentRootPath || "",
+                workspaceFolderName
+              );
+            }
+            // 判断5分钟内是否打开过相同地址
+            const now = new Date().getTime();
+            if (
+              context.browserLastOpenPath === remotePath &&
+              context.browserLastOpenTime &&
+              now - context.browserLastOpenTime < 5 * 60 * 1000
+            ) {
+
+              const confirm = await vscode.window.showQuickPick([localize("ftp.provider.yes"),
+              localize("ftp.provider.no")], { placeHolder: localize("ftp.provider.confirmOpenAgain", remotePath) }
+              );
+              if (confirm !== localize("ftp.provider.yes")) {
+                return;
+              }
+            }
+            context.browserLastOpenPath = remotePath;
+            context.browserLastOpenTime = now;
+            browserOpener.openUrlInBrowser({ path: remotePath });
+          }
         }
       }
     );

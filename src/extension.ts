@@ -10,19 +10,19 @@ function activate(context: vscode.ExtensionContext) {
   init(context.extensionPath);
   // *******
   // 注册最近修改视图
-  const treeDataProvider = new RecentFilesTreeDataProvider();
+  const recentTreeDataProvider = new RecentFilesTreeDataProvider();
   const recentTreeView = vscode.window.createTreeView('recent-files', {
-    treeDataProvider,
+    treeDataProvider: recentTreeDataProvider,
     canSelectMany: true // 启用多选功能
   });
   // 监听文件系统更改事件
   const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*');
-  fileSystemWatcher.onDidChange(() => treeDataProvider.throttledRefresh());
-  fileSystemWatcher.onDidCreate(() => treeDataProvider.throttledRefresh());
-  fileSystemWatcher.onDidDelete(() => treeDataProvider.throttledRefresh());
+  fileSystemWatcher.onDidChange(() => recentTreeDataProvider.throttledRefresh());
+  fileSystemWatcher.onDidCreate(() => recentTreeDataProvider.throttledRefresh());
+  fileSystemWatcher.onDidDelete(() => recentTreeDataProvider.throttledRefresh());
 
   const disposableRefresh = vscode.commands.registerCommand('vs-ex-compress.refreshRecentFiles', () => {
-    treeDataProvider.refresh();
+    recentTreeDataProvider.refresh();
   });
 
   const disposableCompress = vscode.commands.registerCommand('vs-ex-compress.compressDirectory', async () => {
@@ -140,7 +140,18 @@ function activate(context: vscode.ExtensionContext) {
       if (selectedItems.length <= 0) {
         selectedItems = [item];
       }
-      await ftpTreeProvider.uploadToFTP(selectedItems,true); 
+      await ftpTreeProvider.uploadToFTP(selectedItems, true);
+    })
+  );
+  // 注册上传所有今日修改文件
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ftpExplorer.uploadTodayModifyItem", async (item: vscode.Uri | vscode.Uri[]) => {
+      let modifyItems = recentTreeDataProvider.getTodayModifyItem();
+      if (modifyItems.length) {
+        await ftpTreeProvider.uploadToFTP(modifyItems, true);
+      } else {
+        vscode.window.showWarningMessage(localize("ftpExplorer.noTodayModifyItem")); 
+      }
     })
   );
   // 注册回到上一级命令

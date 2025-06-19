@@ -10,6 +10,18 @@ export default class RecentFilesTreeDataProvider implements vscode.TreeDataProvi
     refresh(): void {
         this._onDidChangeTreeData.fire();
     }
+    private todayModifyItem: vscode.Uri[] = [];
+    private pushTodyModifyItem(item: vscode.Uri) {
+        // 以 item.resourceUri?.fsPath 为唯一标识去重
+        const exists = this.todayModifyItem.some(i => i.fsPath === item.fsPath);
+        if (!exists) {
+            this.todayModifyItem.push(item);
+        }
+    }
+
+    public getTodayModifyItem(): vscode.Uri[] {
+        return this.todayModifyItem;
+    }
 
     // 添加节流刷新方法
     throttledRefresh(): void {
@@ -32,6 +44,9 @@ export default class RecentFilesTreeDataProvider implements vscode.TreeDataProvi
             arguments: [element]
         };
 
+        // 设置鼠标悬浮时显示完整路径
+        treeItem.tooltip = element.fsPath;
+
         try {
             const stat = await fs.promises.stat(element.fsPath);
             const mtime = new Date(stat.mtimeMs);
@@ -40,6 +55,8 @@ export default class RecentFilesTreeDataProvider implements vscode.TreeDataProvi
             const diffDays = diffMs / (1000 * 60 * 60 * 24);
             if (mtime.toDateString() === now.toDateString()) {
                 treeItem.description = ` \u21BB ${mtime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+                this.pushTodyModifyItem(element);
+                console.log("todayModifyItem", this.todayModifyItem);
             } else if (diffDays < 7) {
                 treeItem.description = ` \u21BB ${mtime.toLocaleDateString([], { month: '2-digit', day: '2-digit' })}`;
             }
@@ -55,7 +72,7 @@ export default class RecentFilesTreeDataProvider implements vscode.TreeDataProvi
             return [];
         }
 
-        // 获取 compress.m01.ignore 配置
+        // 获取ignore 配置
         const config = vscode.workspace.getConfiguration('ftpClient');
         const ignorePattern = config.get<string>('7.ignore', '');
         const regex = ignorePattern ? new RegExp(ignorePattern) : null;
@@ -71,8 +88,8 @@ export default class RecentFilesTreeDataProvider implements vscode.TreeDataProvi
         const files = await Promise.all(entries.map(entry => {
             const fullPath = path.join(dir, entry.name);
             // 忽略符合正则规则的文件或目录
-            if (regex && regex.test(entry.name)) {
-                console.log(`Ignoring file or directory: ${entry.name}`);
+            if (regex && regex.test(entry.name)) { 
+                console.log(`Ignoring file or directory: ${entry.name}`); 
                 return [];
             }
 

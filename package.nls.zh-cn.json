@@ -21,6 +21,8 @@
   "ftpExplorer.backParentDirectory": "返回上级目录",
   "ftpExplorer.deleteItem": "删除 FTP 项目",
   "ftpExplorer.uploadItem": "上传到 FTP",
+  "ftpExplorer.uploadTodayModifyItem": "上传今日修改文件到 FTP",
+  "ftpExplorer.noTodayModifyItem": "无今日修改文件",
   "ftpExplorerCategory": "FTP 浏览器",
   "openFile.progress": "正在打开文件...",
   "displayFileMetadata.error": "获取文件元数据时出错: {0}",

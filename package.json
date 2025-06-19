@@ -181,6 +181,12 @@
         "icon": "$(cloud-upload)"
       },
       {
+        "command": "ftpExplorer.uploadTodayModifyItem",
+        "title": "%ftpExplorer.uploadTodayModifyItem%",
+        "category": "%ftpExplorerCategory%",
+        "icon": "$(cloud-upload)"
+      },
+      {
         "command": "ftpExplorer.uploadRecentItem",
         "title": "%ftpExplorer.uploadItem%",
         "category": "%ftpExplorerCategory%"
@@ -256,8 +262,13 @@
       ],
       "view/title": [
         {
+          "command": "ftpExplorer.uploadTodayModifyItem",
+          "group": "navigation@2",
+          "when": "view == recent-files"
+        },
+        {
           "command": "vs-ex-compress.compressDirectory",
-          "group": "navigation",
+          "group": "navigation@1",
           "when": "view == recent-files"
         },
         {

@@ -21,6 +21,8 @@
   "ftpExplorer.backParentDirectory": "Back Parent Directory",
   "ftpExplorer.deleteItem": "Delete FTP Item",
   "ftpExplorer.uploadItem": "Upload to FTP",
+  "ftpExplorer.uploadTodayModifyItem": "Upload Today Modify Item FTP",
+  "ftpExplorer.noTodayModifyItem": "No Today Modify Item",
   "ftpExplorerCategory": "FTP Explorer",
   "openFile.progress": "Opening File...",
   "displayFileMetadata.error": "Error retrieving file metadata: {0}",

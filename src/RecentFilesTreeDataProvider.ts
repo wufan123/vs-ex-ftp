@@ -25,6 +25,7 @@ export default class RecentFilesTreeDataProvider implements vscode.TreeDataProvi
 
     // 添加节流刷新方法
     throttledRefresh(): void {
+        this.todayModifyItem = [];
         if (this.refreshTimeout) {
             clearTimeout(this.refreshTimeout);
         }
@@ -88,8 +89,8 @@ export default class RecentFilesTreeDataProvider implements vscode.TreeDataProvi
         const files = await Promise.all(entries.map(entry => {
             const fullPath = path.join(dir, entry.name);
             // 忽略符合正则规则的文件或目录
-            if (regex && regex.test(entry.name)) { 
-                console.log(`Ignoring file or directory: ${entry.name}`); 
+            if (regex && regex.test(entry.name)) {
+                console.log(`Ignoring file or directory: ${entry.name}`);
                 return [];
             }
 

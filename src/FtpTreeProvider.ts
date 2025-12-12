@@ -77,7 +77,7 @@ class FTPClientWrapper {
   }
 
   async list(directoryPath: string = "/"): Promise<ftp.FileInfo[]> {
-    await this.connect(); // 确保连接建立
+    await this.connect(); // 确保连接建立 
     return this.client.list(directoryPath);
   }
 
@@ -273,60 +273,58 @@ class FTPClientWrapper {
     progress: vscode.Progress<{ increment?: number; message?: string }>,
     token: vscode.CancellationToken
   ) {
-    await this.connect();
-    const fileSize = fs.statSync(localPath).size; // 获取文件大小
-    let uploadedBytes = 0;
 
-    // 设置取消标记
-    const cancellationPromise = new Promise<void>((_, reject) => {
-      token.onCancellationRequested(() => {
-        this.client.close(); // 尝试关闭连接
-        reject(new Error("Upload cancelled by user."));
+    return new Promise(async (resolve, reject) => {
+      await this.connect();
+      // const fileSize = fs.statSync(localPath).size; // 获取文件大小
+      let uploadedBytes = 0;
+
+      // 设置取消标记
+      const cancellationPromise = new Promise<void>((_, reject) => {
+        token.onCancellationRequested(() => {
+          this.client.close(); // 尝试关闭连接
+          reject(new Error("Upload cancelled by user."));
+        });
       });
-    });
 
-    // 设置进度追踪
-    this.client.trackProgress((info) => {
+      // 设置进度追踪
+      this.client.trackProgress((info) => {
+        console.log("上传进度--------", info.bytesOverall, info.bytes, info);
+        if (token.isCancellationRequested) {
+          this.client.trackProgress();
+          return; // 停止更新
+        }
+
+        uploadedBytes = info.bytesOverall;
+        let fileSize = info.bytes;
+        const percent = ((uploadedBytes / fileSize) * 100).toFixed(2); // 百分比
+        const fileSizeFormatted = this.formatFileSize(fileSize); // 总大小格式化
+        const uploadedSizeFormatted = this.formatFileSize(uploadedBytes); // 已上传大小格式化
+
+        progress?.report({
+          increment: uploadedBytes - uploadedBytes,
+          message: `${path.basename(
+            localPath
+          )} - ${uploadedSizeFormatted}/${fileSizeFormatted} (${percent}%)`,
+        });
+        if (fileSize == uploadedBytes && fileSize != 0) {
+          this.client.trackProgress();
+          this.client.close();
+          resolve("success"); // 上传完成，结束方法
+        }
+      });
+
       if (token.isCancellationRequested) {
-        return; // 停止更新
+        return; // 取消
       }
-      uploadedBytes = info.bytesOverall;
-      const percent = ((uploadedBytes / fileSize) * 100).toFixed(2); // 百分比
-      const fileSizeFormatted = this.formatFileSize(fileSize); // 总大小格式化
-      const uploadedSizeFormatted = this.formatFileSize(uploadedBytes); // 已上传大小格式化
-
-      progress?.report({
-        message: `${path.basename(
-          localPath
-        )} - ${uploadedSizeFormatted}/${fileSizeFormatted} (${percent}%)`,
-      });
-    });
-
-    if (token.isCancellationRequested) {
-      return; // 取消
-    }
-
-    try {
-      // 先确保远程目录存在，只传目录部分
       const remoteDir = path.posix.dirname(remotePath);
       await this.client.ensureDir(remoteDir);
       await Promise.race([
         this.client.uploadFrom(localPath, remotePath), // 上传任务
         cancellationPromise, // 取消逻辑
       ]);
-    } catch (error) {
-      if (token.isCancellationRequested) {
-        console.warn("Upload was cancelled.");
-      } else {
-        console.error(
-          `Failed to upload file: ${localPath} to ${remotePath}:`,
-          error
-        );
-        throw error;
-      }
-    } finally {
-      this.client.trackProgress(); // 停止追踪进度
-    }
+    })
+
   }
 
   // 上传文件夹
@@ -397,6 +395,9 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     this.ftpClient = new FTPClientWrapper();
     const config = vscode.workspace.getConfiguration("ftpClient");
     this.currentPath = this.currentRootPath = config.get<string>("4.path", "/");
+    // 初始化浏览器预览相关属性
+    this.browserLastOpenPath = undefined;
+    this.browserLastOpenTime = undefined;
     vscode.commands.executeCommand(
       "setContext",
       "ftpExplorer.refreshEnabled",
@@ -749,207 +750,7 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
     }
     return defaultUri;
   }
-  /*
-  public async uploadToFTP(item?: any) {
-    if (item instanceof vscode.Uri || (Array.isArray(item) && item[0] instanceof vscode.Uri)) {
-      const uris: vscode.Uri[] = Array.isArray(item) ? item : [item];
-      const remotePath = this.currentRootPath;
-      const cancellationTokenSource = new vscode.CancellationTokenSource();
 
-      vscode.window.withProgress(
-        {
-          location: vscode.ProgressLocation.Notification,
-          title: localize("ftp.provider.uploading"),
-          cancellable: true,
-        },
-        async (progress, token) => {
-          try {
-            for (const uri of uris) {
-              if (token.isCancellationRequested) break;
-              const stat = await vscode.workspace.fs.stat(uri);
-              const fileName = path.basename(uri.fsPath);
-              const remoteTargetPath = path.posix.join(remotePath, fileName);
-              if (stat.type === vscode.FileType.Directory) {
-                await this.uploadDirectoryWithStructure(uri.fsPath, remoteTargetPath, progress, token);
-              } else {
-                await this.ftpClient.uploadFile(uri.fsPath, remoteTargetPath, progress, token);
-              }
-            }
-            if (!token.isCancellationRequested) {
-              vscode.window.showInformationMessage(localize("ftp.provider.uploadSuccess"), remotePath);
-              await this.refreshFTPItems(this.currentPath);
-            }
-          } catch (error) {
-            if (!token.isCancellationRequested) {
-              vscode.window.showErrorMessage(localize("ftp.provider.uploadFailed", error.message));
-            }
-          } finally {
-            cancellationTokenSource.dispose();
-          }
-        }
-      );
-      return;
-    }
-
-    // 2. 兼容原有 FTP 面板上传逻辑
-    const workspaceFolder = vscode.workspace.workspaceFolders
-      ? vscode.workspace.workspaceFolders[0].uri.fsPath
-      : undefined;
-    if (!workspaceFolder) {
-      vscode.window.showErrorMessage(
-        localize("ftp.provider.noWorkspaceFolder")
-      );
-      return;
-    }
-
-    const workspaceFolderName = path.basename(workspaceFolder); // 获取当前工作目录名称
-    const uploadCurrentWorkspaceAction = localize(
-      "ftp.provider.uploadCurrentWorkspace",
-      workspaceFolderName
-    );
-    const actions = [
-      uploadCurrentWorkspaceAction,
-      localize("ftp.provider.uploadFolder"),
-      localize("ftp.provider.uploadFile"), // 修改为支持多选文件
-    ];
-
-    const action = await vscode.window.showQuickPick(actions, {
-      placeHolder: localize("ftp.provider.chooseUploadAction"),
-    });
-
-    if (!action) {
-      return;
-    }
-    const cancellationTokenSource = new vscode.CancellationTokenSource();
-    const isUploadingWorkspace = action === uploadCurrentWorkspaceAction;
-    let defaultUri: vscode.Uri | undefined;
-    defaultUri = this.getDefaultUri(workspaceFolder);
-
-    const config = vscode.workspace.getConfiguration("ftpClient.9");
-    const confirmTheUploadDirectory = config.get<boolean>(
-      "confirmTheUploadDirectory"
-    );
-
-    const selectedFiles = isUploadingWorkspace
-      ? [{ fsPath: workspaceFolder }]
-      : await vscode.window.showOpenDialog({
-        canSelectFolders: action === localize("ftp.provider.uploadFolder"),
-        canSelectFiles: action === localize("ftp.provider.uploadFile"), // 支持多选文件
-        canSelectMany: true, // 允许多选
-        openLabel: action,
-        defaultUri: defaultUri,
-      });
-
-    if (!selectedFiles || selectedFiles.length === 0) {
-      return;
-    }
-
-    let remotePath = this.currentRootPath;
-    // if (selectedFiles.length === 1) {
-    //   const selectedFolderName = path.basename(selectedFiles[0].fsPath);
-    //   remotePath = path.posix.join(
-    //     this.currentRootPath || "",
-    //     selectedFolderName
-    //   );
-    // }
-    if (confirmTheUploadDirectory) {
-      remotePath = await vscode.window.showInputBox({
-        prompt: localize("ftp.provider.enterDestinationPath"),
-        value: remotePath,
-        placeHolder: localize("ftp.provider.examplePath"),
-      });
-    }
-    if (!remotePath) {
-      return;
-    }
-
-    vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: localize("ftp.provider.uploading"),
-        cancellable: true,
-      },
-      async (progress, token) => {
-        try {
-          token.onCancellationRequested(() => {
-            cancellationTokenSource.cancel();
-            vscode.window.showWarningMessage(
-              localize("ftp.provider.uploadCancelled", "Upload cancelled.")
-            );
-          });
-
-          for (const [index, file] of selectedFiles.entries()) {
-            if (token.isCancellationRequested) {
-              break; // 取消任务
-            }
-            const localPath = file.fsPath;
-            const fileName = path.basename(localPath);
-            const isDirectory =
-              isUploadingWorkspace ||
-              (await vscode.workspace.fs.stat(vscode.Uri.file(file.fsPath)))
-                .type === vscode.FileType.Directory;
-            if (isDirectory) {
-              let remoteTargetPath = path.posix.join(remotePath, fileName);
-              await this.uploadDirectoryWithStructure(
-                localPath,
-                remoteTargetPath,
-                progress,
-                token
-              );
-            } else {
-              const remoteTargetPath = path.posix.join(remotePath, fileName);
-              if (token.isCancellationRequested) {
-                break; // 检查取消状态
-              }
-              await this.ftpClient.uploadFile(
-                localPath,
-                remoteTargetPath,
-                progress,
-                token
-              );
-            }
-          }
-
-          if (!token.isCancellationRequested) {
-            vscode.window.showInformationMessage(
-              localize(
-                "ftp.provider.uploadSuccess",
-                isUploadingWorkspace
-                  ? workspaceFolder
-                  : path.basename(selectedFiles[0]?.fsPath),
-                remotePath
-              )
-            );
-            await this.refreshFTPItems(this.currentPath);
-            const config = vscode.workspace.getConfiguration("ftpClient.m10");
-            const previewAfterUploading = config.get<boolean>(
-              "previewAfterUploading"
-            );
-            if (previewAfterUploading) {
-              const browserOpener = new BrowserOpener();
-              if (isUploadingWorkspace) {
-                const workspaceFolderName = path.basename(workspaceFolder);
-                remotePath = path.posix.join(
-                  this.currentRootPath || "",
-                  workspaceFolderName
-                );
-              }
-              browserOpener.openUrlInBrowser({ path: remotePath });
-            }
-          }
-        } catch (error) {
-          if (!token.isCancellationRequested) {
-            vscode.window.showErrorMessage(
-              localize("ftp.provider.uploadFailed", error.message)
-            );
-          }
-        } finally {
-          cancellationTokenSource.dispose();
-        }
-      }
-    );
-  }
-  */
   public async uploadToFTP(item?: any, maintainTheHierarchy = false) {
     // 统一处理本地 explorer 右键和 FTP 面板
     let uploadFiles: { fsPath: string }[] = [];
@@ -1088,6 +889,40 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
                 )
               );
               await this.refreshFTPItems(this.currentPath);
+
+              // 上传完成后执行浏览器预览功能
+              const configM10 = vscode.workspace.getConfiguration("ftpClient.m10");
+              const previewAfterUploading = configM10.get<boolean>("previewAfterUploading");
+              if (previewAfterUploading) {
+                const browserOpener = new BrowserOpener();
+                let previewRemotePath = remotePath;
+                if (isUploadingWorkspace) {
+                  const workspaceFolderName = path.basename(uploadFiles[0].fsPath);
+                  previewRemotePath = path.posix.join(
+                    this.currentRootPath || "",
+                    workspaceFolderName
+                  );
+                }
+                // 判断5分钟内是否打开过相同地址
+                const now = new Date().getTime();
+                if (
+                  this.browserLastOpenPath === previewRemotePath &&
+                  this.browserLastOpenTime &&
+                  now - this.browserLastOpenTime < 5 * 60 * 1000
+                ) {
+
+                  const confirm = await vscode.window.showQuickPick([localize("ftp.provider.no"), localize("ftp.provider.yes")
+                  ], { placeHolder: localize("ftp.provider.confirmOpenAgain", previewRemotePath) }
+                  );
+                  if (confirm !== localize("ftp.provider.yes")) {
+                    resolve();
+                    return;
+                  }
+                }
+                this.browserLastOpenPath = previewRemotePath;
+                this.browserLastOpenTime = now;
+                browserOpener.openUrlInBrowser({ path: previewRemotePath });
+              }
             }
             resolve();
           } catch (error) {
@@ -1096,43 +931,13 @@ export class FtpTreeProvider implements vscode.TreeDataProvider<FtpItem> {
                 localize("ftp.provider.uploadFailed", error.message)
               );
             }
-            reject();
+            reject(error);
           } finally {
             cancellationTokenSource.dispose();
           }
         }
       );
     });
-    const configM10 = vscode.workspace.getConfiguration("ftpClient.m10");
-    const previewAfterUploading = configM10.get<boolean>("previewAfterUploading");
-    if (previewAfterUploading) {
-      const browserOpener = new BrowserOpener();
-      if (isUploadingWorkspace) {
-        const workspaceFolderName = path.basename(uploadFiles[0].fsPath);
-        remotePath = path.posix.join(
-          this.currentRootPath || "",
-          workspaceFolderName
-        );
-      }
-      // 判断5分钟内是否打开过相同地址
-      const now = new Date().getTime();
-      if (
-        context.browserLastOpenPath === remotePath &&
-        context.browserLastOpenTime &&
-        now - context.browserLastOpenTime < 5 * 60 * 1000
-      ) {
-
-        const confirm = await vscode.window.showQuickPick([localize("ftp.provider.no"), localize("ftp.provider.yes")
-        ], { placeHolder: localize("ftp.provider.confirmOpenAgain", remotePath) }
-        );
-        if (confirm !== localize("ftp.provider.yes")) {
-          return;
-        }
-      }
-      context.browserLastOpenPath = remotePath;
-      context.browserLastOpenTime = now;
-      browserOpener.openUrlInBrowser({ path: remotePath });
-    }
   }
   public previewWorkspace() {
     const workspaceFolder = vscode.workspace.workspaceFolders

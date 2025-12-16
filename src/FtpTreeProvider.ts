@@ -288,6 +288,8 @@ class FTPClientWrapper {
       });
 
       // 设置进度追踪
+      // 每次上传前重置进度
+      progress?.report({ increment: -100 });
       this.client.trackProgress((info) => {
         console.log("上传进度--------", info.bytesOverall, info.bytes, info);
         if (token.isCancellationRequested) {
@@ -302,7 +304,7 @@ class FTPClientWrapper {
         const uploadedSizeFormatted = this.formatFileSize(uploadedBytes); // 已上传大小格式化
 
         progress?.report({
-          increment: uploadedBytes - uploadedBytes,
+          increment: parseFloat(percent),
           message: `${path.basename(
             localPath
           )} - ${uploadedSizeFormatted}/${fileSizeFormatted} (${percent}%)`,
